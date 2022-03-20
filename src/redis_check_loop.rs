@@ -79,8 +79,8 @@ pub async fn check_redis(
             while let Some(key) = iter.next_item().await {
                 keys.push(key);
             }
-            debug!("{:?}", keys);
-            debug!("Keys have been extracted from the scan.");
+            // debug!("{:?}", keys);
+            // debug!("Keys have been extracted from the scan.");
             keys
         }
         Err(err) => {
