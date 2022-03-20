@@ -15,7 +15,6 @@ use serenity::{
     client::Context,
     model::interactions::{
         message_component::MessageComponentInteraction,
-        InteractionApplicationCommandCallbackDataFlags,
     },
 };
 use tracing::*;

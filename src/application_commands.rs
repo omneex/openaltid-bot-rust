@@ -20,6 +20,7 @@ pub async fn register(ctx: &Context) {
     setmodrole::register(&ctx).await;
     setverificaitonrole::register(&ctx).await;
     add_connection::register(&ctx).await;
+    remove_connection::register(&ctx).await;
     verify::register(&ctx).await;
     info!("Done.");
 
@@ -90,6 +91,9 @@ async fn handle_commands(
         }
         "addconnection" => {
             add_connection::command(ctx, a_command, mongo_client).await;
+        }
+        "removeconnection" => {
+            remove_connection::command(ctx, a_command, mongo_client).await;
         }
         "setminage" => {
             setage::command(ctx, a_command, mongo_client).await;
