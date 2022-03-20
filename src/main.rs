@@ -2,41 +2,29 @@ mod application_commands;
 mod commands;
 mod dbmodels;
 mod mongo_conn;
-mod startup;
 mod redis_check_loop;
+mod startup;
 
-use std::{
-    env,
-    time::Duration,
-    sync::{
-        Arc,
-        atomic::{
-            Ordering, 
-            AtomicBool
-        }
-    }
-};
 use crate::{
-    mongo_conn::{
-        get_collection,
-        get_db, get_mongo_client
-    },
-    startup::insert_guilds
+    mongo_conn::{get_collection, get_db, get_mongo_client},
+    startup::insert_guilds,
 };
 use redis_check_loop::check_redis;
-use serenity::{
-    framework::StandardFramework,
-    prelude::*,
-    async_trait,
-    model::prelude::*
+use serenity::{async_trait, framework::StandardFramework, model::prelude::*, prelude::*};
+use std::{
+    env,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::Duration,
 };
 use tracing::*;
-
 
 struct Handler {
     mongodb_client: mongodb::Client,
     redis_client: redis::Client,
-    is_loop_running: AtomicBool
+    is_loop_running: AtomicBool,
 }
 
 #[async_trait]
@@ -49,7 +37,7 @@ impl EventHandler for Handler {
         // }
 
         let mongo_conn_str = env::var("MONGO_CONN_STR").expect("Need a MongoDB connection string.");
-        let client = match get_mongo_client(  mongo_conn_str.as_str()).await {
+        let client = match get_mongo_client(mongo_conn_str.as_str()).await {
             Ok(client) => client,
             Err(_) => {
                 panic!("Could not get mongoDB client.")
@@ -65,7 +53,13 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, _ctx: Context, _interaction: Interaction) {
         // If the interaction is an Application Command then name the interaction applicationCommand
         // and move on to the evaluate the block
-        application_commands::handle_interactions(&_ctx, _interaction, &self.mongodb_client, &self.redis_client).await
+        application_commands::handle_interactions(
+            &_ctx,
+            _interaction,
+            &self.mongodb_client,
+            &self.redis_client,
+        )
+        .await
     }
 
     // We use the cache_ready event just in case some cache operation is required in whatever use
@@ -93,14 +87,18 @@ impl EventHandler for Handler {
         let redis_client = Arc::new(redis_client);
 
         if !self.is_loop_running.load(Ordering::Relaxed) {
-
             let ctx1 = Arc::clone(&ctx);
             let mongo_client1 = Arc::clone(&mongo_client);
             let redis_client1 = Arc::clone(&redis_client);
 
             tokio::spawn(async move {
                 loop {
-                    check_redis(Arc::clone(&ctx1), Arc::clone(&mongo_client1), Arc::clone(&redis_client1)).await;
+                    check_redis(
+                        Arc::clone(&ctx1),
+                        Arc::clone(&mongo_client1),
+                        Arc::clone(&redis_client1),
+                    )
+                    .await;
                     tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             });
@@ -110,8 +108,6 @@ impl EventHandler for Handler {
         }
     }
 }
-
-
 
 #[tokio::main]
 async fn main() {
@@ -140,7 +136,7 @@ async fn main() {
     let redis_url = env::var("REDIS_HOST").expect("Need a MongoDB connection string.");
     let redis_client = match redis::Client::open(format!("redis://{}/", redis_url)) {
         Ok(client) => client,
-        Err(e) => panic!("Could not get redis client. {}", e)
+        Err(e) => panic!("Could not get redis client. {}", e),
     };
 
     let handler = Handler {

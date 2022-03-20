@@ -1,7 +1,9 @@
 use mongodb::options::{ClientOptions, CollectionOptions, ResolverConfig};
 use mongodb::*;
 pub async fn get_mongo_client(connection_str: &str) -> mongodb::error::Result<Client> {
-    let client_options = ClientOptions::parse_with_resolver_config(connection_str, ResolverConfig::cloudflare()).await?;
+    let client_options =
+        ClientOptions::parse_with_resolver_config(connection_str, ResolverConfig::cloudflare())
+            .await?;
     Client::with_options(client_options)
 }
 

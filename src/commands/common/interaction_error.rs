@@ -1,8 +1,10 @@
-use serenity::{client::Context, model::interactions::message_component::MessageComponentInteraction};
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionResponseType;
 use serenity::model::prelude::InteractionApplicationCommandCallbackDataFlags;
 use serenity::utils::Colour;
+use serenity::{
+    client::Context, model::interactions::message_component::MessageComponentInteraction,
+};
 use tracing::{error, warn};
 
 pub async fn interaction_error(
@@ -23,14 +25,17 @@ pub async fn interaction_error(
                             .title("Uh Oh!")
                             .description("Something went wrong during that.")
                             .field("Reason", err_message, false)
-                            .color(Colour::from_rgb(255,0,0))
+                            .color(Colour::from_rgb(255, 0, 0))
                     })
                 })
         })
         .await;
 
     if let Err(err) = res {
-        error!("An error occurred while sending an error interaction reply. {}", err);
+        error!(
+            "An error occurred while sending an error interaction reply. {}",
+            err
+        );
     }
 }
 
@@ -52,14 +57,17 @@ pub async fn interaction_error_comp(
                             .title("Uh Oh!")
                             .description("Something went wrong during that.")
                             .field("Reason", err_message, false)
-                            .color(Colour::from_rgb(255,0,0))
+                            .color(Colour::from_rgb(255, 0, 0))
                     })
                 })
         })
         .await;
 
     if let Err(err) = res {
-        error!("An error occurred while sending an error interaction reply. {}", err);
+        error!(
+            "An error occurred while sending an error interaction reply. {}",
+            err
+        );
     }
 }
 
@@ -79,6 +87,9 @@ pub async fn channel_message_error(
         })
     }).await;
     if let Err(err) = res {
-        error!("An error occurred while sending an error interaction reply. {}", err);
+        error!(
+            "An error occurred while sending an error interaction reply. {}",
+            err
+        );
     }
 }

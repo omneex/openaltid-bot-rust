@@ -1,29 +1,44 @@
+use crate::commands::common::slash_commands;
+use crate::commands::common::{
+    interaction_error::{interaction_error, interaction_error_comp},
+    permissions_check::{check_if_mod, check_if_mod_comp},
+};
 use mongodb::bson::{doc, Document};
-use serenity::{client::Context, model::interactions::{message_component::MessageComponentInteraction, InteractionApplicationCommandCallbackDataFlags}};
-use serenity::model::interactions::application_command::{ApplicationCommand, ApplicationCommandInteraction, ApplicationCommandOptionType};
+use mongodb::*;
+use serenity::model::interactions::application_command::{
+    ApplicationCommand, ApplicationCommandInteraction, ApplicationCommandOptionType,
+};
 use serenity::model::interactions::message_component::ButtonStyle;
 use serenity::model::interactions::InteractionResponseType;
 use serenity::model::user::User;
+use serenity::{
+    client::Context,
+    model::interactions::{
+        message_component::MessageComponentInteraction,
+        InteractionApplicationCommandCallbackDataFlags,
+    },
+};
 use tracing::*;
-use mongodb::*;
-use crate::commands::common::{interaction_error::{interaction_error, interaction_error_comp}, permissions_check::{check_if_mod_comp, check_if_mod}};
-use crate::commands::common::slash_commands;
 
-pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mongo_client: &Client) {
-
+pub async fn command(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    mongo_client: &Client,
+) {
     match check_if_mod(&ctx, &command, &mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return
-            } {
+                return;
+            }
+            {
                 interaction_error("You must be a mod to use this command.", command, ctx).await;
             }
-        },
+        }
         Err(err) => {
             warn!("{}", err);
             interaction_error(err, command, ctx).await;
-            return
-        },
+            return;
+        }
     }
 
     let options = command.data.options.clone();
@@ -37,44 +52,29 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
         match tup.0 {
             "user" => {
                 if let Some(x) = slash_commands::get_user(tup.1).await {
-                    params_received+=1;
+                    params_received += 1;
                     user = x
                 } else {
-                    interaction_error(
-                        "'user' param is invalid.",
-                        command,
-                        ctx,
-                    )
-                    .await;
-                    return
+                    interaction_error("'user' param is invalid.", command, ctx).await;
+                    return;
                 }
             }
             "account_type" => {
                 if let Some(x) = slash_commands::get_string(tup.1).await {
-                    params_received+=1;
+                    params_received += 1;
                     account_type = x
                 } else {
-                    interaction_error(
-                        "'account_type' param is invalid.",
-                        command,
-                        ctx,
-                    )
-                    .await;
-                    return
+                    interaction_error("'account_type' param is invalid.", command, ctx).await;
+                    return;
                 }
             }
             "account_id" => {
                 if let Some(x) = slash_commands::get_string(tup.1).await {
-                    params_received+=1;
+                    params_received += 1;
                     account_id = x
                 } else {
-                    interaction_error(
-                        "'account_id' param is invalid.",
-                        command,
-                        ctx,
-                    )
-                    .await;
-                    return
+                    interaction_error("'account_id' param is invalid.", command, ctx).await;
+                    return;
                 }
             }
             _ => {}
@@ -83,9 +83,9 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
 
     if params_received != 3 {
         interaction_error("Incorrect number of parameters.", command, ctx).await;
-        return
+        return;
     }
-    
+
     info!(
         "User {}, Account {}, ID {}",
         user.name, account_type, account_id
@@ -93,15 +93,17 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
 
     let user_id: i64 = user.id.0 as i64;
     let collection: Collection<Document> = mongo_client.database("test").collection("accounts");
-    let insert_res = collection.insert_one(
-        doc! {
-            "user_ID": &user_id,
-            "account_type": &account_type,
-            "account_id": &account_id,
-        },
-        None,
-    ).await;
-    
+    let insert_res = collection
+        .insert_one(
+            doc! {
+                "user_ID": &user_id,
+                "account_type": &account_type,
+                "account_id": &account_id,
+            },
+            None,
+        )
+        .await;
+
     if insert_res.is_err() {
         super::super::common::interaction_error::interaction_error(
             "Could not insert account into database.",
@@ -109,7 +111,7 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
             ctx,
         )
         .await;
-        return
+        return;
     }
 
     info!("Creating response...");
@@ -130,10 +132,12 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
                         .components(|components| {
                             components.create_action_row(|row| {
                                 row.create_button(|button| {
-                                    button
-                                        .style(ButtonStyle::Danger)
-                                        .label("UNDO")
-                                        .custom_id(format!("UndoAddConnection:{}:{}:{}", &user_id, &account_type, &account_id))
+                                    button.style(ButtonStyle::Danger).label("UNDO").custom_id(
+                                        format!(
+                                            "UndoAddConnection:{}:{}:{}",
+                                            &user_id, &account_type, &account_id
+                                        ),
+                                    )
                                 })
                             })
                         })
@@ -150,21 +154,26 @@ pub async fn command(ctx: &Context, command: &ApplicationCommandInteraction, mon
     info!("Response created.");
 }
 
-pub async fn undo_callback(ctx: &Context, interaction: &MessageComponentInteraction, mongo_client: &mongodb::Client) {
-    
+pub async fn undo_callback(
+    ctx: &Context,
+    interaction: &MessageComponentInteraction,
+    mongo_client: &mongodb::Client,
+) {
     match check_if_mod_comp(&ctx, &interaction, &mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return
-            } {
-                interaction_error_comp("You must be a mod to use this command.", interaction, ctx).await;
+                return;
             }
-        },
+            {
+                interaction_error_comp("You must be a mod to use this command.", interaction, ctx)
+                    .await;
+            }
+        }
         Err(err) => {
             warn!("{}", err);
             interaction_error_comp(err, &interaction, ctx).await;
-            return
-        },
+            return;
+        }
     }
 
     let ids_split: Vec<&str> = interaction.data.custom_id.split(":").collect();
@@ -174,62 +183,70 @@ pub async fn undo_callback(ctx: &Context, interaction: &MessageComponentInteract
         None => {
             error!("Invalid interaction data in UNDO callback.");
             "error"
-        },
+        }
     };
     let account_type = match ids_split.get(1) {
         Some(val) => *val,
         None => {
             error!("Invalid interaction data in UNDO callback.");
             "error"
-        },
+        }
     };
     let account_id = match ids_split.get(1) {
         Some(val) => *val,
         None => {
             error!("Invalid interaction data in UNDO callback.");
             "error"
-        },
+        }
     };
 
-    let account_collection: Collection<Document> = mongo_client.database("bot").collection("accounts");
-    let delete_res = account_collection.delete_many(
-        doc! {
-            "user_ID": &user_id,
-            "account_type": &account_type,
-            "account_id": &account_id,
-        },
-        None,
-    ).await;
+    let account_collection: Collection<Document> =
+        mongo_client.database("bot").collection("accounts");
+    let delete_res = account_collection
+        .delete_many(
+            doc! {
+                "user_ID": &user_id,
+                "account_type": &account_type,
+                "account_id": &account_id,
+            },
+            None,
+        )
+        .await;
 
     match delete_res {
         Ok(doc) => debug!("{:?}", doc),
         Err(err) => {
             error!("Could not remove doc - {:?}", err);
-            return
-        },
+            return;
+        }
     }
 
-    let _res = interaction.create_interaction_response(&ctx.http, |response| {
-        response
-            .kind(InteractionResponseType::ChannelMessageWithSource)
-            .interaction_response_data(|message| {
-                message.create_embed(|embed| {
-                    embed
-                        .title("Changes reverted")
-                        .description("The connection that you added has been removed from the database.")
-                        .field("User:", format!("<@{}>\n{}", &account_id, &account_id), false)
-                        .field("Account:", account_type, false)
-                        .field("Account ID:", account_id, false)
-                        .footer(|footer| {
-                            footer.text("Powered by Open/Alt.ID")
-                        })
+    let _res = interaction
+        .create_interaction_response(&ctx.http, |response| {
+            response
+                .kind(InteractionResponseType::ChannelMessageWithSource)
+                .interaction_response_data(|message| {
+                    message.create_embed(|embed| {
+                        embed
+                            .title("Changes reverted")
+                            .description(
+                                "The connection that you added has been removed from the database.",
+                            )
+                            .field(
+                                "User:",
+                                format!("<@{}>\n{}", &account_id, &account_id),
+                                false,
+                            )
+                            .field("Account:", account_type, false)
+                            .field("Account ID:", account_id, false)
+                            .footer(|footer| footer.text("Powered by Open/Alt.ID"))
+                    })
                 })
-            })
-    }).await;
+        })
+        .await;
 }
 
 pub async fn register(ctx: &Context) {
-    
     if let Err(err) = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
         command
             .name("addconnection")
@@ -253,7 +270,8 @@ pub async fn register(ctx: &Context) {
                     .required(true)
             })
     })
-        .await {
+    .await
+    {
         error!("Could not register verify command! {}", err.to_string());
         panic!()
     }

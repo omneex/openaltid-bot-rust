@@ -39,7 +39,12 @@ pub async fn register(ctx: &Context) {
     }
 }
 
-pub async fn handle_interactions(ctx: &Context, intn: Interaction, mongo_client: &mongodb::Client, redis_client: &redis::Client) {
+pub async fn handle_interactions(
+    ctx: &Context,
+    intn: Interaction,
+    mongo_client: &mongodb::Client,
+    redis_client: &redis::Client,
+) {
     match intn {
         Interaction::Ping(_) => {}
         Interaction::ApplicationCommand(a_command) => {
@@ -77,7 +82,7 @@ async fn handle_commands(
                 Ok(conn) => conn,
                 Err(err) => {
                     panic!("REDIS ERROR - FAILED TO GET CONNECTION - {:?}", err);
-                },
+                }
             };
             let val: Result<String, RedisError> = conn.get("hello").await;
             debug!("{:?}", val);
@@ -111,16 +116,16 @@ async fn handle_components(
 ) {
     let ids_split: Vec<&str> = m_component.data.custom_id.split(":").collect();
     let comp_type: &str = match ids_split.get(0) {
-        Some(str_type) => {
-            *str_type
-        },
+        Some(str_type) => *str_type,
         None => "none",
     };
     // TODO possibly avoid another split here by using this split again, but for now I dont want to edit the signiture
     match comp_type {
         "HelpButton" => verify::help_callback(&ctx, m_component, mongo_client).await,
         "UndoAddConnection" => add_connection::undo_callback(ctx, m_component, mongo_client).await,
-        "UndoRemoveConnection" => remove_connection::undo_callback(ctx, m_component, mongo_client).await,
+        "UndoRemoveConnection" => {
+            remove_connection::undo_callback(ctx, m_component, mongo_client).await
+        }
         _ => {
             warn!("Interaction not found.");
         }
@@ -179,7 +184,7 @@ pub async fn add_admins_to_perms(
         Ok(role_map) => {
             for role_tup in role_map {
                 let (role_id, role) = role_tup;
-                if role.permissions.administrator() && role.tags.bot_id == None{
+                if role.permissions.administrator() && role.tags.bot_id == None {
                     admin_role_ids.push(role_id);
                 }
             }
@@ -190,14 +195,17 @@ pub async fn add_admins_to_perms(
         }
     };
     for id in &admin_role_ids {
-        match guild_id.create_application_command_permission(&*ctx.http, command.id, |perms| {
-            perms.create_permission(|perm_data| {
-                perm_data
-                    .id(id.0)
-                    .permission(true)
-                    .kind(ApplicationCommandPermissionType::Role)
+        match guild_id
+            .create_application_command_permission(&*ctx.http, command.id, |perms| {
+                perms.create_permission(|perm_data| {
+                    perm_data
+                        .id(id.0)
+                        .permission(true)
+                        .kind(ApplicationCommandPermissionType::Role)
+                })
             })
-        }).await {
+            .await
+        {
             Ok(_) => {}
             Err(_) => {
                 error!("Failed to create perm.");
@@ -206,7 +214,9 @@ pub async fn add_admins_to_perms(
         }
     }
 
-    let perm = guild_id.get_application_command_permissions(&ctx.http, command.id).await;
+    let perm = guild_id
+        .get_application_command_permissions(&ctx.http, command.id)
+        .await;
     match perm {
         Ok(_) => {}
         Err(_) => {
@@ -220,15 +230,20 @@ pub async fn add_admins_to_perms(
 pub async fn get_vec_of_perms(
     ctx: &Context,
     command_id: &CommandId,
-    guild_id: &GuildId
-) -> serenity::static_assertions::_core::result::Result<Vec<(CommandPermissionId, bool)>, &'static str> {
+    guild_id: &GuildId,
+) -> serenity::static_assertions::_core::result::Result<
+    Vec<(CommandPermissionId, bool)>,
+    &'static str,
+> {
     let mut vec_of_roles: Vec<(CommandPermissionId, bool)> = vec![];
-    let perm = guild_id.get_application_command_permissions(&ctx.http, *command_id).await;
+    let perm = guild_id
+        .get_application_command_permissions(&ctx.http, *command_id)
+        .await;
     match perm {
         Ok(p) => {
             for pe in p.permissions {
                 vec_of_roles.push((pe.id, pe.permission));
-            };
+            }
         }
         Err(_) => {
             return Err("Failed to get permissions.");

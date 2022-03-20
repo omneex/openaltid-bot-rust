@@ -1,14 +1,14 @@
 use super::super::super::dbmodels::guild::Guild as GuildStruct;
 use super::super::common::interaction_error::{channel_message_error, interaction_error};
-use mongodb::bson::{Bson, doc};
-use mongodb::*;
-use serenity::prelude::*;
-use serenity::model::prelude::*;
-use serenity::model::prelude::application_command::*;
-use tracing::{error, info, instrument};
-use crate::commands::common::slash_commands::{extract_vec, get_int};
 use crate::commands::common::permissions_check::check_if_mod;
+use crate::commands::common::slash_commands::{extract_vec, get_int};
 use crate::log::{debug, warn};
+use mongodb::bson::{doc, Bson};
+use mongodb::*;
+use serenity::model::prelude::application_command::*;
+use serenity::model::prelude::*;
+use serenity::prelude::*;
+use tracing::{error, info, instrument};
 
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
@@ -20,16 +20,17 @@ pub async fn command(
     match check_if_mod(&ctx, &command, &mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return
-            } {
+                return;
+            }
+            {
                 interaction_error("You must be a mod to use this command.", command, ctx).await;
             }
-        },
+        }
         Err(err) => {
             warn!("{}", err);
             interaction_error(err, command, ctx).await;
-            return
-        },
+            return;
+        }
     }
     let command_options = command.data.options.clone();
     let mut num_days_bson: Bson = bson::Bson::Boolean(false);
@@ -43,7 +44,8 @@ pub async fn command(
                         Ok(bson_data) => bson_data,
                         Err(err) => {
                             error!("{:?}", err);
-                            interaction_error("Could not convert input properly.", &command, &ctx).await;
+                            interaction_error("Could not convert input properly.", &command, &ctx)
+                                .await;
                             return;
                         }
                     }
@@ -73,11 +75,14 @@ pub async fn command(
     };
 
     let collection: Collection<GuildStruct> = mongo_client.database("bot").collection("guilds");
-    let _ = match collection.update_one(
-        doc! {"guild_ID": guild_id_str},
-        doc! {"$set": {"verification_age": &num_days_bson}},
-        None)
-            .await {
+    let _ = match collection
+        .update_one(
+            doc! {"guild_ID": guild_id_str},
+            doc! {"$set": {"verification_age": &num_days_bson}},
+            None,
+        )
+        .await
+    {
         Ok(res) => res,
         Err(err) => {
             error!("{:?}", err);
@@ -102,12 +107,7 @@ pub async fn command(
 
     if let Err(err) = res {
         error!("{:?}", err);
-        channel_message_error(
-            "Could not send interaction message.",
-            command,
-            ctx,
-        )
-        .await;
+        channel_message_error("Could not send interaction message.", command, ctx).await;
     }
 }
 
@@ -123,13 +123,14 @@ pub async fn register(ctx: &Context) {
                     .kind(ApplicationCommandOptionType::Integer)
                     .required(true)
             })
-    }).await;
+    })
+    .await;
 
     match result {
         Ok(command) => {
             info!("Command {:?} registered successfully.", command);
             command
-        },
+        }
         Err(error) => {
             error!("Could not create guild command! {:?}", error);
             return;
