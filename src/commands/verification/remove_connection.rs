@@ -99,14 +99,36 @@ pub async fn command(
         )
         .await;
 
-    if delete_res.is_err() {
-        super::super::common::interaction_error::interaction_error(
-            "Could not remove account from database.",
-            command,
-            ctx,
-        )
-        .await;
-        return;
+    match delete_res {
+        Ok(doc) => {
+            if doc.deleted_count < 1 {
+                let _res = command
+                    .create_interaction_response(&ctx.http, |response| {
+                        response
+                            .kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|message| {
+                                message.create_embed(|embed| {
+                                    embed
+                                        .title("No changes made")
+                                        .description("No database entries matched the given data.")
+                                        .footer(|footer| footer.text("Powered by Open/Alt.ID"))
+                                })
+                            })
+                    })
+                    .await;
+                return;
+            }
+        }
+        Err(err) => {
+            super::super::common::interaction_error::interaction_error(
+                "Could not remove account from database.",
+                command,
+                ctx,
+            )
+            .await;
+            error!("Could not remove doc - {:?}", err);
+            return;
+        }
     }
 
     info!("Creating response...");

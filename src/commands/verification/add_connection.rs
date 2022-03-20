@@ -177,14 +177,14 @@ pub async fn undo_callback(
             "error"
         }
     };
-    let account_type = match ids_split.get(1) {
+    let account_type = match ids_split.get(2) {
         Some(val) => *val,
         None => {
             error!("Invalid interaction data in UNDO callback.");
             "error"
         }
     };
-    let account_id = match ids_split.get(1) {
+    let account_id = match ids_split.get(3) {
         Some(val) => *val,
         None => {
             error!("Invalid interaction data in UNDO callback.");
@@ -206,7 +206,24 @@ pub async fn undo_callback(
         .await;
 
     match delete_res {
-        Ok(doc) => debug!("{:?}", doc),
+        Ok(doc) => {
+            if doc.deleted_count < 1 {
+                let _res = interaction
+                    .create_interaction_response(&ctx.http, |response| {
+                        response
+                            .kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|message| {
+                                message.create_embed(|embed| {
+                                    embed
+                                        .title("No changes made")
+                                        .description("No database entries matched the given data.")
+                                        .footer(|footer| footer.text("Powered by Open/Alt.ID"))
+                                })
+                            })
+                    })
+                    .await;
+            }
+        }
         Err(err) => {
             error!("Could not remove doc - {:?}", err);
             return;
