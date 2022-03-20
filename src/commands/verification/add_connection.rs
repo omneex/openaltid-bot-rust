@@ -86,11 +86,13 @@ pub async fn command(
     );
 
     let user_id: i64 = user.id.0 as i64;
-    let collection: Collection<Document> = mongo_client.database("bot").collection("accounts");
+    let collection: Collection<Document> = mongo_client
+        .database("verification_data")
+        .collection("socialmediaaccounts ");
     let insert_res = collection
         .insert_one(
             doc! {
-                "user_ID": &user_id,
+                "user_ID": &user_id.to_string(),
                 "account_type": &account_type,
                 "account_id": &account_id,
             },
@@ -169,6 +171,7 @@ pub async fn undo_callback(
     }
 
     let ids_split: Vec<&str> = interaction.data.custom_id.split(':').collect();
+    debug!("{:?}", ids_split);
 
     let user_id = match ids_split.get(1) {
         Some(val) => *val,
@@ -192,14 +195,17 @@ pub async fn undo_callback(
         }
     };
 
-    let account_collection: Collection<Document> =
-        mongo_client.database("bot").collection("accounts");
-    let delete_res = account_collection
-        .delete_many(
+    debug!("{} - {} - {}", user_id, account_type, account_id);
+
+    let collection: Collection<Document> = mongo_client
+        .database("verification_data")
+        .collection("socialmediaaccounts ");
+    let delete_res = collection
+        .delete_one(
             doc! {
-                "user_ID": &user_id,
-                "account_type": &account_type,
-                "account_id": &account_id,
+                "user_ID": user_id,
+                "account_type": account_type,
+                "account_id": account_id,
             },
             None,
         )
@@ -208,6 +214,7 @@ pub async fn undo_callback(
     match delete_res {
         Ok(doc) => {
             if doc.deleted_count < 1 {
+                debug!("delete_res - {:?}", doc);
                 let _res = interaction
                     .create_interaction_response(&ctx.http, |response| {
                         response
@@ -222,6 +229,7 @@ pub async fn undo_callback(
                             })
                     })
                     .await;
+                return;
             }
         }
         Err(err) => {
@@ -241,11 +249,7 @@ pub async fn undo_callback(
                             .description(
                                 "The connection that you added has been removed from the database.",
                             )
-                            .field(
-                                "User:",
-                                format!("<@{}>\n{}", &account_id, &account_id),
-                                false,
-                            )
+                            .field("User:", format!("<@{}>\n{}", &user_id, &user_id), false)
                             .field("Account:", account_type, false)
                             .field("Account ID:", account_id, false)
                             .footer(|footer| footer.text("Powered by Open/Alt.ID"))

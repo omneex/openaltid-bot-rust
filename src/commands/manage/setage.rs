@@ -34,10 +34,9 @@ pub async fn command(
     let mut num_days_bson: Bson = bson::Bson::Boolean(false);
     for tup in extract_vec(&command_options).await {
         match tup.0 {
-            "num_of_days" => {
+            "age" => {
                 // Extract an int from the options and convert it into bson.
-                if let Some(x) = get_int(tup.1).await {
-                    let num_days = x;
+                if let Some(num_days) = get_int(tup.1).await {
                     num_days_bson = match bson::to_bson(&num_days) {
                         Ok(bson_data) => bson_data,
                         Err(err) => {
@@ -58,7 +57,8 @@ pub async fn command(
                 }
             }
             _ => {
-                warn!("Unrecognized parameter given.")
+                warn!("Unrecognized parameter given.");
+                return;
             }
         }
     }

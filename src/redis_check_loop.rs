@@ -20,8 +20,8 @@ pub async fn check_redis(
             return;
         }
     };
-    let is_debug = if let Ok(_val) = env::var("DEBUG") {
-        "true".parse().unwrap_or(false)
+    let is_debug = if let Ok(val) = env::var("DEBUG") {
+        val.parse().unwrap_or(false)
     } else {
         false
     };

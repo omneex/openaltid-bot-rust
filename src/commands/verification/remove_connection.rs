@@ -1,8 +1,7 @@
-use crate::commands::common::permissions_check::check_if_mod;
 use crate::commands::common::slash_commands;
 use crate::commands::common::{
     interaction_error::{interaction_error, interaction_error_comp},
-    permissions_check::check_if_mod_comp,
+    permissions_check::{check_if_mod, check_if_mod_comp},
 };
 use mongodb::bson::{doc, Document};
 use mongodb::*;
@@ -87,11 +86,13 @@ pub async fn command(
     );
 
     let user_id: i64 = user.id.0 as i64;
-    let collection: Collection<Document> = mongo_client.database("bot").collection("accounts");
+    let collection: Collection<Document> = mongo_client
+        .database("verification_data")
+        .collection("socialmediaaccounts ");
     let delete_res = collection
         .delete_many(
             doc! {
-                "user_ID": &user_id,
+                "user_ID": &user_id.to_string(),
                 "account_type": &account_type,
                 "account_id": &account_id,
             },
@@ -215,12 +216,13 @@ pub async fn undo_callback(
         }
     };
 
-    let account_collection: Collection<Document> =
-        mongo_client.database("bot").collection("accounts");
+    let account_collection: Collection<Document> = mongo_client
+        .database("verification_data")
+        .collection("socialmediaaccounts ");
     let delete_res = account_collection
         .insert_one(
             doc! {
-                "user_ID": &user_id,
+                "user_ID": &user_id.to_string(),
                 "account_type": &account_type,
                 "account_id": &account_id,
             },
@@ -245,11 +247,7 @@ pub async fn undo_callback(
                         embed
                             .title("Changes reverted")
                             .description("The connection was added back into the database.")
-                            .field(
-                                "User:",
-                                format!("<@{}>\n{}", &account_id, &account_id),
-                                false,
-                            )
+                            .field("User:", format!("<@{}>\n{}", &user_id, &user_id), false)
                             .field("Account:", account_type, false)
                             .field("Account ID:", account_id, false)
                             .footer(|footer| footer.text("Powered by Open/Alt.ID"))

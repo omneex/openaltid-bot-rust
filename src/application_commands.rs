@@ -104,7 +104,7 @@ async fn handle_commands(
         "setmodrole" => {
             setmodrole::command(ctx, a_command, mongo_client).await;
         }
-        "setverirole" => {
+        "setverifiedrole" => {
             setverificaitonrole::command(ctx, a_command, mongo_client).await;
         }
         _ => {
