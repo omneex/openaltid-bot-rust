@@ -15,13 +15,13 @@ pub async fn register(ctx: &Context) {
     // Do all command registrations here.
     // If a command fails to register it will panic.
     info!("Registering commands...");
-    setage::register(&ctx).await;
-    setlogchannel::register(&ctx).await;
-    setmodrole::register(&ctx).await;
-    setverificaitonrole::register(&ctx).await;
-    add_connection::register(&ctx).await;
-    remove_connection::register(&ctx).await;
-    verify::register(&ctx).await;
+    setage::register(ctx).await;
+    setlogchannel::register(ctx).await;
+    setmodrole::register(ctx).await;
+    setverificaitonrole::register(ctx).await;
+    add_connection::register(ctx).await;
+    remove_connection::register(ctx).await;
+    verify::register(ctx).await;
     info!("Done.");
 
     // Print out the currently registered commands.
@@ -118,14 +118,14 @@ async fn handle_components(
     m_component: &MessageComponentInteraction,
     mongo_client: &Client,
 ) {
-    let ids_split: Vec<&str> = m_component.data.custom_id.split(":").collect();
+    let ids_split: Vec<&str> = m_component.data.custom_id.split(':').collect();
     let comp_type: &str = match ids_split.get(0) {
         Some(str_type) => *str_type,
         None => "none",
     };
     // TODO possibly avoid another split here by using this split again, but for now I dont want to edit the signiture
     match comp_type {
-        "HelpButton" => verify::help_callback(&ctx, m_component, mongo_client).await,
+        "HelpButton" => verify::help_callback(ctx, m_component, mongo_client).await,
         "UndoAddConnection" => add_connection::undo_callback(ctx, m_component, mongo_client).await,
         "UndoRemoveConnection" => {
             remove_connection::undo_callback(ctx, m_component, mongo_client).await

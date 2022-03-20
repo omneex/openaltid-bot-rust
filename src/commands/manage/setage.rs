@@ -17,7 +17,7 @@ pub async fn command(
     mongo_client: &mongodb::Client,
 ) {
     // Check if the user is a mod.
-    match check_if_mod(&ctx, &command, &mongo_client).await {
+    match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
                 return;
@@ -44,7 +44,7 @@ pub async fn command(
                         Ok(bson_data) => bson_data,
                         Err(err) => {
                             error!("{:?}", err);
-                            interaction_error("Could not convert input properly.", &command, &ctx)
+                            interaction_error("Could not convert input properly.", command, ctx)
                                 .await;
                             return;
                         }
@@ -68,7 +68,7 @@ pub async fn command(
     // Extract the Guild ID as a string.
     let guild_id_str = match command.guild_id {
         None => {
-            interaction_error("This command must be run in a guild.", &command, &ctx).await;
+            interaction_error("This command must be run in a guild.", command, ctx).await;
             return;
         }
         Some(x) => x.0.to_string(),
@@ -86,7 +86,7 @@ pub async fn command(
         Ok(res) => res,
         Err(err) => {
             error!("{:?}", err);
-            interaction_error("Could not update the database.", &command, &ctx).await;
+            interaction_error("Could not update the database.", command, ctx).await;
             return;
         }
     };
@@ -129,11 +129,9 @@ pub async fn register(ctx: &Context) {
     match result {
         Ok(command) => {
             info!("Command {:?} registered successfully.", command);
-            command
         }
         Err(error) => {
             error!("Could not create guild command! {:?}", error);
-            return;
         }
     };
 }

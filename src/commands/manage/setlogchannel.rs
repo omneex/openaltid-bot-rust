@@ -18,7 +18,7 @@ pub async fn command(
     mongo_client: &Client,
 ) {
     // Check if mod already.
-    match check_if_mod(&ctx, &command, &mongo_client).await {
+    match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
                 return;
@@ -37,22 +37,19 @@ pub async fn command(
     let options = command.data.options.clone();
     let mut channel_id_string: String = "".to_string();
     for tup in super::super::common::slash_commands::extract_vec(&options).await {
-        match tup.0 {
-            "channel" => {
-                if let Some(x) = super::super::common::slash_commands::get_channel(tup.1).await {
-                    channel_id_string = x.id.0.to_string();
-                } else {
-                    interaction_error("'channel' param was invalid.", command, ctx).await;
-                    return;
-                }
+        if tup.0 == "channel" {
+            if let Some(x) = super::super::common::slash_commands::get_channel(tup.1).await {
+                channel_id_string = x.id.0.to_string();
+            } else {
+                interaction_error("'channel' param was invalid.", command, ctx).await;
+                return;
             }
-            _ => {}
         }
     }
 
     let guild_id_str = match command.guild_id {
         None => {
-            interaction_error("This command must be run in a guild.", &command, &ctx).await;
+            interaction_error("This command must be run in a guild.", command, ctx).await;
             return;
         }
         Some(x) => x.0.to_string(),
@@ -62,7 +59,7 @@ pub async fn command(
         Ok(bson) => bson,
         Err(err) => {
             error!("{}", err);
-            interaction_error("Could not convert role ID to bson.", &command, &ctx).await;
+            interaction_error("Could not convert role ID to bson.", command, ctx).await;
             return;
         }
     };
@@ -79,7 +76,7 @@ pub async fn command(
         Ok(res) => res,
         Err(err) => {
             error!("{:?}", err);
-            interaction_error("Could not update the database.", &command, &ctx).await;
+            interaction_error("Could not update the database.", command, ctx).await;
             return;
         }
     };
@@ -103,8 +100,8 @@ pub async fn command(
         error!("{}", err);
         super::super::common::interaction_error::channel_message_error(
             "Could not send interaction message.",
-            &command,
-            &ctx,
+            command,
+            ctx,
         )
         .await;
     } else {
@@ -132,11 +129,9 @@ pub async fn register(ctx: &Context) {
     match result {
         Ok(command) => {
             info!("Command {:?} registered successfully.", command);
-            command
         }
         Err(error) => {
             error!("Could not create guild command! {:?}", error);
-            return;
         }
     };
 }

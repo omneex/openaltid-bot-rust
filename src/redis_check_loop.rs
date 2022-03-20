@@ -21,10 +21,7 @@ pub async fn check_redis(
         }
     };
     let is_debug = if let Ok(_val) = env::var("DEBUG") {
-        match "true".parse() {
-            Ok(val) => val,
-            Err(_) => false,
-        }
+        "true".parse().unwrap_or(false)
     } else {
         false
     };
@@ -113,7 +110,7 @@ pub async fn check_redis(
         if val.starts_with("true") {
             // debug!("Value starts with true.");
             // split key on ':'
-            let key_split = key.split(":").collect::<Vec<&str>>().clone();
+            let key_split = key.split(':').collect::<Vec<&str>>().clone();
             // debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
@@ -137,7 +134,7 @@ pub async fn check_redis(
             // split val on ':'
             // score is index 1
             // minscore is index 2
-            let val_split: Vec<&str> = val.split(":").collect();
+            let val_split: Vec<&str> = val.split(':').collect();
             // debug!("{:?}", val_split);
 
             let score = match val_split.get(1) {
@@ -352,7 +349,7 @@ pub async fn check_redis(
         else if val.starts_with("false") {
             // debug!("Value starts with false.");
             // split key on ':'
-            let key_split = key.split(":").collect::<Vec<&str>>().clone();
+            let key_split = key.split(':').collect::<Vec<&str>>().clone();
             // debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
@@ -376,7 +373,7 @@ pub async fn check_redis(
             // split val on ':'
             // score is index 1
             // minscore is index 2
-            let val_split: Vec<&str> = val.split(":").collect();
+            let val_split: Vec<&str> = val.split(':').collect();
             // debug!("{:?}", val_split);
 
             let score = match val_split.get(1) {
@@ -475,7 +472,7 @@ pub async fn check_redis(
                             author
                         });
                         embed.field("User Mention", format!("<@{}>", user_id), false);
-                        embed.field("User ID", format!("{}", user_id), false);
+                        embed.field("User ID", user_id.to_string(), false);
                         embed.field("Score", format!("**{}** / {}", score, minscore), false);
                         embed.footer(|footer| {
                             footer.text("Powered by Open/Alt.ID");
@@ -499,7 +496,7 @@ pub async fn check_redis(
         else if val.starts_with("error") {
             // debug!("Value starts with error.");
             // split key on ':'
-            let key_split = key.split(":").collect::<Vec<&str>>().clone();
+            let key_split = key.split(':').collect::<Vec<&str>>().clone();
             // debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
@@ -522,7 +519,7 @@ pub async fn check_redis(
 
             // split val on ':'
             // reason is index 1
-            let val_split: Vec<&str> = val.split(":").collect();
+            let val_split: Vec<&str> = val.split(':').collect();
             // debug!("{:?}", val_split);
             // user_id is index 1
             let reason = match val_split.get(1) {

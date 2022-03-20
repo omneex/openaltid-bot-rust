@@ -24,7 +24,7 @@ pub async fn command(
     command: &ApplicationCommandInteraction,
     mongo_client: &Client,
 ) {
-    match check_if_mod(&ctx, &command, &mongo_client).await {
+    match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
                 return;
@@ -158,7 +158,7 @@ pub async fn undo_callback(
     interaction: &MessageComponentInteraction,
     mongo_client: &mongodb::Client,
 ) {
-    match check_if_mod_comp(&ctx, &interaction, &mongo_client).await {
+    match check_if_mod_comp(ctx, interaction, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
                 return;
@@ -170,12 +170,12 @@ pub async fn undo_callback(
         }
         Err(err) => {
             warn!("{}", err);
-            interaction_error_comp(err, &interaction, ctx).await;
+            interaction_error_comp(err, interaction, ctx).await;
             return;
         }
     }
 
-    let ids_split: Vec<&str> = interaction.data.custom_id.split(":").collect();
+    let ids_split: Vec<&str> = interaction.data.custom_id.split(':').collect();
 
     let user_id = match ids_split.get(1) {
         Some(val) => *val,

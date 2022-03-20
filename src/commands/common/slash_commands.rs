@@ -6,15 +6,12 @@ use serenity::model::interactions::application_command::{
 use serenity::model::user::User;
 
 pub async fn extract_vec(
-    options: &Vec<ApplicationCommandInteractionDataOption>,
+    options: &[ApplicationCommandInteractionDataOption],
 ) -> Vec<(&str, ApplicationCommandInteractionDataOptionValue)> {
     let mut params: Vec<(&str, ApplicationCommandInteractionDataOptionValue)> = vec![];
     options.iter().for_each(|opt| {
         let value: Option<ApplicationCommandInteractionDataOptionValue> =
-            match opt.to_owned().resolved {
-                None => None,
-                Some(resolved) => Some(resolved),
-            };
+            opt.to_owned().resolved;
         match value {
             None => {}
             Some(value) => params.push((opt.name.as_str(), value)),
