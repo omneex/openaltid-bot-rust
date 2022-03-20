@@ -8,7 +8,7 @@ use tracing::*;
 
 #[instrument(skip(ctx, client))]
 pub async fn insert_guilds(ctx: &Context, client: &mongodb::Client) -> Result<(), String> {
-    let db = get_db(client, "bot").await;
+    let db = get_db(client, "botdb").await;
     let col: Collection<Guild> = get_collection(&db, "guilds", None).await;
     let guilds = ctx.cache.guilds().await;
     for guild in guilds {

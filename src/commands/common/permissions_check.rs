@@ -34,7 +34,7 @@ pub async fn check_if_mod(
 
     // Try to get the guild from the database, returns an option if the guild was found.
     let guild_doc_opt = match mongo_client
-        .database("bot")
+        .database("botdb")
         .collection("guilds")
         .find_one(doc! {"guild_ID": guild_id.to_string()}, None)
         .await
@@ -101,7 +101,7 @@ pub async fn check_if_mod_comp(
 
     // Try to get the guild from the database, returns an option if the guild was found.
     let guild_doc_opt = match mongo_client
-        .database("bot")
+        .database("botdb")
         .collection("guilds")
         .find_one(doc! {"guild_ID": guild_id.to_string()}, None)
         .await

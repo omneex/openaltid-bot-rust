@@ -70,7 +70,7 @@ pub async fn command(
         }
     };
 
-    let collection: Collection<GuildStruct> = mongo_client.database("bot").collection("guilds");
+    let collection: Collection<GuildStruct> = mongo_client.database("botdb").collection("guilds");
     let update_res = match collection
         .update_one(
             doc! {"guild_ID": guild_id_str},

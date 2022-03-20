@@ -196,7 +196,7 @@ pub async fn check_redis(
             // get guild settings from mongodb
             // if the server has no verification role set, log an error and return.
             let guild_doc_opt: Option<GuildDoc> = match mongo_client
-                .database("bot")
+                .database("botdb")
                 .collection("guilds")
                 .find_one(doc! {"guild_ID": guild_id.to_string()}, None)
                 .await
@@ -427,7 +427,7 @@ pub async fn check_redis(
             // if the server has no verification role set, log an error and return.
             // get guild settings from mongodb
             let guild_doc_opt: Option<GuildDoc> = match mongo_client
-                .database("bot")
+                .database("botdb")
                 .collection("guilds")
                 .find_one(doc! {"guild_ID": guild_id.to_string()}, None)
                 .await
@@ -595,7 +595,7 @@ pub async fn check_redis(
             // debug!("{:?}", reason);
             // get guild settings from mongodb
             let guild_doc_opt: Option<GuildDoc> = match mongo_client
-                .database("bot")
+                .database("botdb")
                 .collection("guilds")
                 .find_one(doc! {"guild_ID": guild_id.to_string()}, None)
                 .await
