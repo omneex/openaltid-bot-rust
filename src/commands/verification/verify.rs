@@ -72,17 +72,22 @@ pub async fn command(
         }
     };
 
-    let min_time = Utc::now() - Duration::days(num_days);
+    let time_now = Utc::now();
 
+    let min_time = time_now - Duration::days(num_days);
     let mut member_of_command = match &command.member {
         Some(mem) => mem.clone(),
         None => return,
     };
 
-    let auto_pass_verification = match member_of_command.joined_at {
-        Some(joined_at) => joined_at < min_time,
-        None => return,
-    };
+    debug!(
+        "time_now: {:?}, min_time: {:?}, created_at: {:?}",
+        time_now,
+        min_time,
+        member_of_command.user.id.created_at()
+    );
+
+    let auto_pass_verification = member_of_command.user.id.created_at() < min_time;
 
     if auto_pass_verification {
         let verification_role_id: u64 = match guild_doc.verification_role_ID.parse() {
