@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "rust: cargo build"
+		},
+		{
+			"label": "Compose Cleanup",
+			"command": "docker-compose",
+			"args": ["down"],
+		},
+		{
+			"label": "Compose Run",
+			"command": "docker-compose",
+			"args": ["up", "--build"],
+		},
+		{
+			"label": "run",
+			"dependsOrder": "sequence",
+			"dependsOn": ["Compose Cleanup", "Compose Run"]
+		}
+	]
+}

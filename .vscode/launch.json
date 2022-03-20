@@ -1,0 +1,62 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'ironic_bot'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=ironic_bot",
+                    "--package=ironic_bot"
+                ],
+                "filter": {
+                    "name": "ironic_bot",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'ironic_bot'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=ironic_bot",
+                    "--package=ironic_bot"
+                ],
+                "filter": {
+                    "name": "ironic_bot",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        
+		{
+			"label": "Compose Cleanup",
+			"command": "docker-compose",
+			"args": ["down"],
+		},
+		{
+			"label": "Compose Run",
+			"command": "docker-compose",
+			"args": ["up", "--build"],
+		},
+		{
+			"label": "run",
+			"dependsOrder": "sequence",
+			"dependsOn": ["Compose Cleanup", "Compose Run"]
+		}
+    ]
+}

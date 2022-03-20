@@ -1,0 +1,20 @@
+services:
+  bot:
+    restart: always
+    build: .
+    links:
+      - redis
+    env_file:
+      - .env
+
+  redis:
+    image: redis
+  
+  commander:
+    image: rediscommander/redis-commander 
+    links:
+      - redis
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOST=redis

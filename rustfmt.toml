@@ -1,0 +1,6 @@
+reorder_imports = true
+control_brace_style = ClosingNextLine
+edition = 2021
+empty_item_single_line = false
+reorder_impl_items = true
+wrap_comments = true
