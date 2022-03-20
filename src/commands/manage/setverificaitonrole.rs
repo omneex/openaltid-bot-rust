@@ -22,10 +22,8 @@ pub async fn command(
     match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return;
-            }
-            {
                 interaction_error("You must be a mod to use this command.", command, ctx).await;
+                return;
             }
         }
         Err(err) => {

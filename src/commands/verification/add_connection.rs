@@ -24,10 +24,8 @@ pub async fn command(
     match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return;
-            }
-            {
                 interaction_error("You must be a mod to use this command.", command, ctx).await;
+                return;
             }
         }
         Err(err) => {
@@ -88,7 +86,7 @@ pub async fn command(
     );
 
     let user_id: i64 = user.id.0 as i64;
-    let collection: Collection<Document> = mongo_client.database("test").collection("accounts");
+    let collection: Collection<Document> = mongo_client.database("bot").collection("accounts");
     let insert_res = collection
         .insert_one(
             doc! {
@@ -158,11 +156,9 @@ pub async fn undo_callback(
     match check_if_mod_comp(ctx, interaction, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return;
-            }
-            {
                 interaction_error_comp("You must be a mod to use this command.", interaction, ctx)
                     .await;
+                return;
             }
         }
         Err(err) => {

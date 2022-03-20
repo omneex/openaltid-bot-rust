@@ -67,7 +67,7 @@ pub async fn check_redis(
         {
             error!("5 {:?}", err);
         };
-        let res: Result<String, RedisError> = conn
+        let _res: Result<String, RedisError> = conn
             .get("complete:179780264761884672:416407744246054912")
             .await;
         //debug!("{:?}", res);
@@ -264,6 +264,7 @@ pub async fn check_redis(
                             embed.color(Colour::DARK_RED);
                             embed.description("The role could not be added to the user and will need to be added manually.\n\n The user did however pass verification successfully.");
                             embed.timestamp(Utc::now());
+                            embed.image(member_obj.face());
                             embed.author(|author| {
                                 author.name("Open/Alt.ID Logs");
                                 author.url("https://github.com/omneex/OpenAltID");
@@ -392,6 +393,36 @@ pub async fn check_redis(
                 }
             };
 
+            // get member obj
+            let user_id: u64 = match user_id.parse() {
+                Ok(num) => num,
+                Err(err) => {
+                    error!(
+                        "Could not parse number from verification_logs_channel_ID - {:?}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let guild_id: u64 = match guild_id.parse() {
+                Ok(num) => num,
+                Err(err) => {
+                    error!(
+                        "Could not parse number from verification_logs_channel_ID - {:?}",
+                        err
+                    );
+                    return;
+                }
+            };
+            // debug!("{:?}", user_id);
+            let member_obj = match ctx.http.get_member(guild_id, user_id).await {
+                Ok(mem) => mem,
+                Err(err) => {
+                    error!("{:?}", err);
+                    return;
+                }
+            };
+
             // get guild settings from mongodb
             // if the server has no verification role set, log an error and return.
             // get guild settings from mongodb
@@ -466,6 +497,7 @@ pub async fn check_redis(
                         embed.color(Colour::ORANGE);
                         embed.description("The user did not pass verification.");
                         embed.timestamp(Utc::now());
+                        embed.image(member_obj.face());
                         embed.author(|author| {
                             author.name("Open/Alt.ID Logs");
                             author.url("https://github.com/omneex/OpenAltID");
@@ -529,6 +561,37 @@ pub async fn check_redis(
                     return;
                 }
             };
+
+            // get member obj
+            let user_id: u64 = match user_id.parse() {
+                Ok(num) => num,
+                Err(err) => {
+                    error!(
+                        "Could not parse number from verification_logs_channel_ID - {:?}",
+                        err
+                    );
+                    return;
+                }
+            };
+            let guild_id: u64 = match guild_id.parse() {
+                Ok(num) => num,
+                Err(err) => {
+                    error!(
+                        "Could not parse number from verification_logs_channel_ID - {:?}",
+                        err
+                    );
+                    return;
+                }
+            };
+            // debug!("{:?}", user_id);
+            let member_obj = match ctx.http.get_member(guild_id, user_id).await {
+                Ok(mem) => mem,
+                Err(err) => {
+                    error!("{:?}", err);
+                    return;
+                }
+            };
+
             // debug!("{:?}", reason);
             // get guild settings from mongodb
             let guild_doc_opt: Option<GuildDoc> = match mongo_client
@@ -599,6 +662,7 @@ pub async fn check_redis(
                         embed.color(Colour::RED);
                         embed.description("The user could not be verified.");
                         embed.timestamp(Utc::now());
+                        embed.image(member_obj.face());
                         embed.author(|author| {
                             author.name("Open/Alt.ID Logs");
                             author.url("https://github.com/omneex/OpenAltID");

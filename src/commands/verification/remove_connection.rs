@@ -25,10 +25,8 @@ pub async fn command(
     match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return;
-            }
-            {
                 interaction_error("You must be a mod to use this command.", command, ctx).await;
+                return;
             }
         }
         Err(err) => {
@@ -159,11 +157,9 @@ pub async fn undo_callback(
     match check_if_mod_comp(ctx, interaction, mongo_client).await {
         Ok(is_mod) => {
             if !is_mod {
-                return;
-            }
-            {
                 interaction_error_comp("You must be a mod to use this command.", interaction, ctx)
                     .await;
+                return;
             }
         }
         Err(err) => {
