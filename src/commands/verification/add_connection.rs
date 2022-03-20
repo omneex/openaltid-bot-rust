@@ -12,10 +12,7 @@ use serenity::model::interactions::message_component::ButtonStyle;
 use serenity::model::interactions::InteractionResponseType;
 use serenity::model::user::User;
 use serenity::{
-    client::Context,
-    model::interactions::{
-        message_component::MessageComponentInteraction,
-    },
+    client::Context, model::interactions::message_component::MessageComponentInteraction,
 };
 use tracing::*;
 

@@ -16,8 +16,7 @@ pub async fn get_collection<T>(
     collection_str: &str,
     options: Option<CollectionOptions>,
 ) -> Collection<T> {
-    let col: Collection<T>
-    = match options {
+    let col: Collection<T> = match options {
         None => db.collection(collection_str),
         Some(options) => db.collection_with_options(collection_str, options),
     };

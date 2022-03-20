@@ -10,8 +10,7 @@ pub async fn extract_vec(
 ) -> Vec<(&str, ApplicationCommandInteractionDataOptionValue)> {
     let mut params: Vec<(&str, ApplicationCommandInteractionDataOptionValue)> = vec![];
     options.iter().for_each(|opt| {
-        let value: Option<ApplicationCommandInteractionDataOptionValue> =
-            opt.to_owned().resolved;
+        let value: Option<ApplicationCommandInteractionDataOptionValue> = opt.to_owned().resolved;
         match value {
             None => {}
             Some(value) => params.push((opt.name.as_str(), value)),
