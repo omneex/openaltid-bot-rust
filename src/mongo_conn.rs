@@ -7,15 +7,15 @@ pub async fn get_mongo_client(connection_str: &str) -> mongodb::error::Result<Cl
 
     match platform.as_str() {
         "windows" => {
-            let client_options =
-                ClientOptions::parse_with_resolver_config(connection_str, ResolverConfig::cloudflare())
-                    .await?;
+            let client_options = ClientOptions::parse_with_resolver_config(
+                connection_str,
+                ResolverConfig::cloudflare(),
+            )
+            .await?;
             Client::with_options(client_options)
         }
         "linux" => {
-            let client_options =
-                ClientOptions::parse(connection_str)
-                    .await?;
+            let client_options = ClientOptions::parse(connection_str).await?;
             Client::with_options(client_options)
         }
         _ => {
