@@ -75,7 +75,7 @@ impl EventHandler for Handler {
             }
         };
 
-        let redis_url = env::var("REDIS_HOST").expect("Need a MongoDB connection string.");
+        let redis_url = env::var("REDIS_HOST").expect("Need a Redis connection string.");
         let redis_client = match redis::Client::open(format!("redis://{}/", redis_url)) {
             Ok(client) => client,
             Err(err) => {

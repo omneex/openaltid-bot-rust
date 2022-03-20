@@ -70,7 +70,7 @@ pub async fn check_redis(
         let res: Result<String, RedisError> = conn
             .get("complete:179780264761884672:416407744246054912")
             .await;
-        debug!("{:?}", res);
+        //debug!("{:?}", res);
     }
 
     let keys = match conn.scan_match("complete*").await {
@@ -79,8 +79,8 @@ pub async fn check_redis(
             while let Some(key) = iter.next_item().await {
                 keys.push(key);
             }
-            debug!("{:?}", keys);
-            debug!("Keys have been extracted from the scan.");
+            //debug!("{:?}", keys);
+            //debug!("Keys have been extracted from the scan.");
             keys
         }
         Err(err) => {
@@ -90,7 +90,7 @@ pub async fn check_redis(
     };
 
     for key in keys {
-        debug!("KEY FOUND FROM SCAN: {}", &key);
+        //debug!("KEY FOUND FROM SCAN: {}", &key);
         // get the value from redis
 
         let val = match conn.get::<String, String>(key.clone().to_string()).await {
@@ -104,7 +104,7 @@ pub async fn check_redis(
             }
         };
 
-        debug!("Value from iter key ({}) - {}", &key, val);
+        //debug!("Value from iter key ({}) - {}", &key, val);
 
         // check for "true*"
         if val.starts_with("true") {
@@ -253,7 +253,7 @@ pub async fn check_redis(
 
             match member_obj.add_role(&ctx.http, verification_role_id).await {
                 Ok(_) => {
-                    debug!("Added role {} to user {}", verification_role_id, user_id)
+                    //debug!("Added role {} to user {}", verification_role_id, user_id)
                 }
                 Err(err) => {
                     error!("Could not add role to user during verification - {:?}", err);
@@ -618,7 +618,7 @@ pub async fn check_redis(
 
             match res {
                 Ok(_) => {
-                    debug!("Embed message was sent successfully.")
+                    //debug!("Embed message was sent successfully.")
                 }
                 Err(err) => {
                     warn!("Could not send embed - {:?}", err)
