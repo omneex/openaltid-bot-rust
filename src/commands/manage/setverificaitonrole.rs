@@ -61,7 +61,7 @@ pub async fn command(
             .await;
             return;
         }
-        Some(role) => role,
+        Some(role) => role.id.0.to_string(),
     };
 
     let guild_id_str = match command.guild_id {
@@ -86,7 +86,7 @@ pub async fn command(
     let _ = match collection
         .update_one(
             doc! {"guild_ID": guild_id_str},
-            doc! {"$set": {"mod_role_ID": &role_bson}},
+            doc! {"$set": {"verification_role_ID": &role_bson}},
             None,
         )
         .await
@@ -106,7 +106,7 @@ pub async fn command(
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
                     message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
-                    message.content(format!("Set the verification role to: <@&{}>", role.id.0))
+                    message.content(format!("Set the verification role to: <@&{}>", role))
                 })
         })
         .await;

@@ -16,7 +16,7 @@ pub async fn check_redis(
     let mut conn = match redis_client.get_async_connection().await {
         Ok(conn) => conn,
         Err(err) => {
-            error!("{:?}", err);
+            error!("Error getting connection to redis - {:?}", err);
             return;
         }
     };
@@ -79,12 +79,12 @@ pub async fn check_redis(
             while let Some(key) = iter.next_item().await {
                 keys.push(key);
             }
-            //debug!("{:?}", keys);
-            //debug!("Keys have been extracted from the scan.");
+            debug!("{:?}", keys);
+            debug!("Keys have been extracted from the scan.");
             keys
         }
         Err(err) => {
-            error!("{:?}", err);
+            error!("Redis error in scan - {:?}", err);
             return;
         }
     };
@@ -168,7 +168,7 @@ pub async fn check_redis(
             let _guild_obj = match ctx.http.get_guild(guild_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting guild - {:?}", err);
                     return;
                 }
             };
@@ -188,7 +188,7 @@ pub async fn check_redis(
             let mut member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting member obj - {:?}", err);
                     return;
                 }
             };
@@ -203,7 +203,7 @@ pub async fn check_redis(
             {
                 Ok(col_opt) => col_opt,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Mongo error - {:?}", err);
                     return;
                 }
             };
@@ -246,7 +246,7 @@ pub async fn check_redis(
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Getting channel - {:?}", err);
                     return;
                 }
             };
@@ -264,7 +264,7 @@ pub async fn check_redis(
                             embed.color(Colour::DARK_RED);
                             embed.description("The role could not be added to the user and will need to be added manually.\n\n The user did however pass verification successfully.");
                             embed.timestamp(Utc::now());
-                            embed.image(member_obj.face());
+                            embed.thumbnail(&member_obj.face());
                             embed.author(|author| {
                                 author.name("Open/Alt.ID Logs");
                                 author.url("https://github.com/omneex/OpenAltID");
@@ -320,6 +320,7 @@ pub async fn check_redis(
                         embed.color(Colour::BLUE);
                         embed.description("The user passed verification.");
                         embed.timestamp(Utc::now());
+                        embed.thumbnail(&member_obj.face());
                         embed.author(|author| {
                             author.name("Open/Alt.ID Logs");
                             author.url("https://github.com/omneex/OpenAltID");
@@ -418,7 +419,7 @@ pub async fn check_redis(
             let member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Cant get member_obj - {:?}", err);
                     return;
                 }
             };
@@ -434,7 +435,7 @@ pub async fn check_redis(
             {
                 Ok(col_opt) => col_opt,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error gettting doc opt - {:?}", err);
                     return;
                 }
             };
@@ -476,7 +477,7 @@ pub async fn check_redis(
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting channel - {:?}", err);
                     return;
                 }
             }; // debug!("{:?}", channel_id);
@@ -486,6 +487,7 @@ pub async fn check_redis(
                 "User: {} was NOT verified in {} Score: {} / {}",
                 user_id, guild_id, score, minscore
             );
+
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
             // debug!("Will now send the info to the logs channel which is {} with the Score: {} / {}.", channel_id, score, minscore);
@@ -497,7 +499,7 @@ pub async fn check_redis(
                         embed.color(Colour::ORANGE);
                         embed.description("The user did not pass verification.");
                         embed.timestamp(Utc::now());
-                        embed.image(member_obj.face());
+                        embed.thumbnail(&member_obj.face());
                         embed.author(|author| {
                             author.name("Open/Alt.ID Logs");
                             author.url("https://github.com/omneex/OpenAltID");
@@ -587,7 +589,7 @@ pub async fn check_redis(
             let member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting member - {:?}", err);
                     return;
                 }
             };
@@ -602,7 +604,7 @@ pub async fn check_redis(
             {
                 Ok(col_opt) => col_opt,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting doc - {:?}", err);
                     return;
                 }
             };
@@ -632,7 +634,7 @@ pub async fn check_redis(
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
-                    error!("{:?}", err);
+                    error!("Error getting channel - {:?}", err);
                     return;
                 }
             };
@@ -654,6 +656,7 @@ pub async fn check_redis(
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
             // debug!("Will now send the info to the logs channel which is {} with the reason of '{}'.", channel_id, reason);
+
             let res = channel
                 .id()
                 .send_message(&ctx.http, |message| {
@@ -662,7 +665,7 @@ pub async fn check_redis(
                         embed.color(Colour::RED);
                         embed.description("The user could not be verified.");
                         embed.timestamp(Utc::now());
-                        embed.image(member_obj.face());
+                        embed.thumbnail(&member_obj.face());
                         embed.author(|author| {
                             author.name("Open/Alt.ID Logs");
                             author.url("https://github.com/omneex/OpenAltID");
