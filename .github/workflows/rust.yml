@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, lint]
     steps:
+    
+      - name: Branch Names
+        uses: tj-actions/branch-names@v5.2
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -44,4 +47,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: omneex/ironicbot:${GITHUB_REF##*/}
+          tags: omneex/ironicbot:${{ steps.branch-name.outputs.current_branch }}
