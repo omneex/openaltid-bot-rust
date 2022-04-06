@@ -21,7 +21,6 @@ use std::{
 };
 use tracing::*;
 
-
 struct Handler {
     mongodb_client: mongodb::Client,
     redis_client: redis::Client,
