@@ -16,7 +16,7 @@ use tracing::*;
 
 use crate::commands::common::interaction_error::interaction_error;
 #[allow(unused)]
-#[instrument(skip(ctx, mongo_client,redis_conn))]
+#[instrument(skip(ctx, mongo_client, redis_conn))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -348,11 +348,7 @@ pub async fn command(
                     false,
                 );
                 embed.field("User ID", member_obj.user.id.0.to_string(), false);
-                embed.field(
-                    "Link Provided",
-                    verification_link.to_string(),
-                    false,
-                );
+                embed.field("Link Provided", verification_link.to_string(), false);
                 embed.field(
                     "Expires In",
                     format!("<t:{}:R>", (time_now + Duration::minutes(15)).timestamp()),
