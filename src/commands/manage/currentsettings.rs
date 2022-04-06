@@ -2,7 +2,7 @@ use super::super::super::dbmodels::guild::Guild as GuildStruct;
 use super::super::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
 use crate::log::warn;
-use mongodb::bson::{doc};
+use mongodb::bson::doc;
 use mongodb::*;
 use serenity::model::prelude::application_command::*;
 use serenity::model::prelude::*;
