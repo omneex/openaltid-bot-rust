@@ -9,19 +9,13 @@ edition = "2021"
 mongodb = "2.1.0"
 redis = { version = "0.21.4", features = ["tokio-comp"] }
 tracing = "0.1.29"
-tracing-subscriber = "0.3.4"
-serde_json = "1.0.73"
+tracing-subscriber = { version = "0.3.4" , features = ["json"] }
+serde_json = "1.0.79"
 rand = "0.8.4"
 chrono = "0.4.19"
-
-[dependencies.serenity]
-version = "0.10.10"
-features = ["unstable_discord_api"]
+serenity = { version = "0.10.10", features = ["unstable_discord_api"] }
+serde = { version = "1.0.136", features = ["derive"]}
 
 [dependencies.tokio]
 version = "1"
 features = ["full"]
-
-[dependencies.serde]
-version = "1.0.132"
-features = ["derive"]

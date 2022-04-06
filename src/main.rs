@@ -20,6 +20,7 @@ use std::{
     time::Duration,
 };
 use tracing::*;
+use tracing_subscriber::fmt;
 
 struct Handler {
     mongodb_client: mongodb::Client,
@@ -112,7 +113,9 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
     // Initialize the tracing subscriber
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .json()
+        .init();
     info!("Starting the bot...");
 
     let framework = StandardFramework::new().configure(|c| c.prefix("~")); // set the bot's prefix to "~"

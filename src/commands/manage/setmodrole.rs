@@ -10,7 +10,7 @@ use serenity::model::interactions::application_command::{
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use tracing::{debug, error, info, instrument, warn};
-
+#[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

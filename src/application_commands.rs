@@ -22,6 +22,7 @@ pub async fn register(ctx: &Context) {
     add_connection::register(ctx).await;
     remove_connection::register(ctx).await;
     verify::register(ctx).await;
+    currentsettings::register(ctx).await;
     info!("Done.");
 
     // Print out the currently registered commands.
@@ -106,6 +107,9 @@ async fn handle_commands(
         }
         "setverifiedrole" => {
             setverificaitonrole::command(ctx, a_command, mongo_client).await;
+        }
+        "currentsettings" => {
+            currentsettings::command(ctx, a_command, mongo_client).await;
         }
         _ => {
             warn!("Command not found.");

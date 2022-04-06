@@ -95,14 +95,9 @@ pub async fn command(
 pub async fn register(ctx: &Context) {
     let result = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
         command
-            .name("setminage")
-            .description("Set the minimum age to avoid verification")
-            .create_option(|opt| {
-                opt.name("age")
-                    .description("The channel to send logs to.")
-                    .kind(ApplicationCommandOptionType::Integer)
-                    .required(true)
-            })
+            .name("currentsettings")
+            .description("Gets the current settings of the server.")
+
     })
     .await;
 
