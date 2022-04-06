@@ -48,4 +48,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: omneex/ironicbot:${GITHUB_REF##*/}
+          tags: omneex/ironicbot:${{GITHUB_REF##*/}}
