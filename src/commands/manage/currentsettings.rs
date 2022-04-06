@@ -1,9 +1,8 @@
 use super::super::super::dbmodels::guild::Guild as GuildStruct;
 use super::super::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
-use crate::commands::common::slash_commands::{extract_vec, get_int};
 use crate::log::warn;
-use mongodb::bson::{doc, Bson};
+use mongodb::bson::{doc};
 use mongodb::*;
 use serenity::model::prelude::application_command::*;
 use serenity::model::prelude::*;
@@ -47,15 +46,20 @@ pub async fn command(
     {
         Ok(res) => match res {
             None => {
-                interaction_error("Could not find guild in the database. This really shouldn't ever happen.", command, ctx).await;
-                return
+                interaction_error(
+                    "Could not find guild in the database. This really shouldn't ever happen.",
+                    command,
+                    ctx,
+                )
+                .await;
+                return;
             }
-            Some(doc) => doc
+            Some(doc) => doc,
         },
         Err(err) => {
             error!("{:?}", err);
             interaction_error("Could not get guild from the database.", command, ctx).await;
-            return
+            return;
         }
     };
 
@@ -97,7 +101,6 @@ pub async fn register(ctx: &Context) {
         command
             .name("currentsettings")
             .description("Gets the current settings of the server.")
-
     })
     .await;
 

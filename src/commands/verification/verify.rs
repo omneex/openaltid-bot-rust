@@ -1,9 +1,8 @@
-use std::num::ParseIntError;
 use crate::dbmodels::guild::Guild as GuildDoc;
 use chrono::{Duration, Utc};
 use mongodb::bson::doc;
 use rand::{distributions, thread_rng, Rng};
-use redis::{AsyncCommands, RedisError, RedisResult, Value};
+use redis::{AsyncCommands, RedisResult, Value};
 use serenity::model::interactions::application_command::{
     ApplicationCommand, ApplicationCommandInteraction,
 };
@@ -12,18 +11,18 @@ use serenity::model::prelude::message_component::ButtonStyle;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::utils::Colour;
+
 use tracing::*;
 
 use crate::commands::common::interaction_error::interaction_error;
 #[allow(unused)]
-#[instrument(skip(ctx, mongo_client))]
+#[instrument(skip(ctx, mongo_client,redis_conn))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     mongo_client: &mongodb::Client,
     mut redis_conn: &mut redis::aio::MultiplexedConnection,
 ) {
-
     let guild_id = match &command.guild_id {
         Some(id) => id.0,
         None => {
@@ -266,7 +265,6 @@ pub async fn command(
         .await;
     debug!("Result from setting value - {:?}", res);
 
-
     let _res = command.create_interaction_response(&ctx.http, |response| {
         response
             .kind(InteractionResponseType::ChannelMessageWithSource)
@@ -314,7 +312,7 @@ pub async fn command(
         Ok(num) => num,
         Err(err) => {
             warn!("Could not parse int from verification channel logs");
-            return
+            return;
         }
     };
 
@@ -322,40 +320,52 @@ pub async fn command(
         Ok(chn) => chn,
         Err(err) => {
             error!("Could not retrieve channel. ID from {}", channel_id);
-            return
+            return;
         }
     };
     let member_obj = match &command.member {
-        None => {
-            return
-        }
-        Some(mem) => mem
+        None => return,
+        Some(mem) => mem,
     };
 
-
-    logs_channel.id().send_message(&ctx.http, |message| {
-        message.embed(|embed| {
-            embed.title("Verification Started");
-            embed.color(Colour::GOLD);
-            embed.description("The user has initiated verification,");
-            embed.timestamp(Utc::now());
-            embed.thumbnail(&member_obj.face());
-            embed.author(|author| {
-                author.name("Open/Alt.ID Logs");
-                author.url("https://github.com/omneex/OpenAltID");
-                author
-            });
-            embed.field("User Mention", format!("<@{}>", member_obj.user.id.0), false);
-            embed.field("User ID", member_obj.user.id.0.to_string(), false);
-            embed.field("Link Provided", format!("{}", verification_link.as_str()), false);
-            embed.field("Expires In", format!("<t:{}:R>", (time_now + Duration::minutes(15)).timestamp()), false);
-            embed.footer(|footer| {
-                footer.text("Powered by Open/Alt.ID");
-                footer
-            });
-            embed
+    logs_channel
+        .id()
+        .send_message(&ctx.http, |message| {
+            message.embed(|embed| {
+                embed.title("Verification Started");
+                embed.color(Colour::GOLD);
+                embed.description("The user has initiated verification,");
+                embed.timestamp(Utc::now());
+                embed.thumbnail(&member_obj.face());
+                embed.author(|author| {
+                    author.name("Open/Alt.ID Logs");
+                    author.url("https://github.com/omneex/OpenAltID");
+                    author
+                });
+                embed.field(
+                    "User Mention",
+                    format!("<@{}>", member_obj.user.id.0),
+                    false,
+                );
+                embed.field("User ID", member_obj.user.id.0.to_string(), false);
+                embed.field(
+                    "Link Provided",
+                    verification_link.to_string(),
+                    false,
+                );
+                embed.field(
+                    "Expires In",
+                    format!("<t:{}:R>", (time_now + Duration::minutes(15)).timestamp()),
+                    false,
+                );
+                embed.footer(|footer| {
+                    footer.text("Powered by Open/Alt.ID");
+                    footer
+                });
+                embed
+            })
         })
-    }).await;
+        .await;
 }
 pub async fn help_callback(
     ctx: &Context,
@@ -382,8 +392,6 @@ pub async fn help_callback(
                 message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
             })
     }).await;
-
-
 }
 
 pub async fn register(ctx: &Context) {
