@@ -164,7 +164,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            debug!("{:?}", guild_obj);
+            debug!("{:?}", guild_id);
             let _guild_obj = match ctx.http.get_guild(guild_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
