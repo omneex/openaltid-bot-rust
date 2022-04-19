@@ -79,8 +79,8 @@ pub async fn check_redis(
             while let Some(key) = iter.next_item().await {
                 keys.push(key);
             }
-            // debug!("{:?}", keys);
-            // debug!("Keys have been extracted from the scan.");
+            debug!("{:?}", keys);
+            debug!("Keys have been extracted from the scan.");
             keys
         }
         Err(err) => {
@@ -108,10 +108,10 @@ pub async fn check_redis(
 
         // check for "true*"
         if val.starts_with("true") {
-            // debug!("Value starts with true.");
+            debug!("Value starts with true.");
             // split key on ':'
             let key_split = key.split(':').collect::<Vec<&str>>().clone();
-            // debug!("{:?}", key_split);
+            debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -135,7 +135,7 @@ pub async fn check_redis(
             // score is index 1
             // minscore is index 2
             let val_split: Vec<&str> = val.split(':').collect();
-            // debug!("{:?}", val_split);
+            debug!("{:?}", val_split);
 
             let score = match val_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -164,7 +164,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_obj);
+            debug!("{:?}", guild_obj);
             let _guild_obj = match ctx.http.get_guild(guild_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
@@ -207,7 +207,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_doc_opt);
+            debug!("{:?}", guild_doc_opt);
 
             // Try to extract the guild doc from the option.
             let guild_doc: GuildDoc = match guild_doc_opt {
@@ -217,7 +217,7 @@ pub async fn check_redis(
                 }
                 Some(doc) => doc,
             };
-            // debug!("{:?}", guild_doc);
+            debug!("{:?}", guild_doc);
 
             // get the role obj from the guild settings
             let verification_role_id: u64 = match guild_doc.verification_role_ID.parse() {
@@ -242,7 +242,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", channel_id);
+            debug!("{:?}", channel_id);
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
@@ -253,7 +253,7 @@ pub async fn check_redis(
 
             match member_obj.add_role(&ctx.http, verification_role_id).await {
                 Ok(_) => {
-                    //debug!("Added role {} to user {}", verification_role_id, user_id)
+                    debug!("Added role {} to user {}", verification_role_id, user_id)
                 }
                 Err(err) => {
                     error!("Could not add role to user during verification - {:?}", err);
