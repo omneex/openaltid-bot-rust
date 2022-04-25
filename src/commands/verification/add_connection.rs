@@ -15,7 +15,7 @@ use serenity::{
     client::Context, model::interactions::message_component::MessageComponentInteraction,
 };
 use tracing::*;
-
+#[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

@@ -11,7 +11,7 @@ use serenity::model::interactions::{
     InteractionApplicationCommandCallbackDataFlags, InteractionResponseType,
 };
 use tracing::*;
-
+#[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

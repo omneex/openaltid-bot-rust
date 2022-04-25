@@ -12,7 +12,7 @@ use serenity::model::interactions::{
     InteractionApplicationCommandCallbackDataFlags, InteractionResponseType,
 };
 use tracing::{error, info, instrument, warn};
-
+#[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

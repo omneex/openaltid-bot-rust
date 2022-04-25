@@ -29,39 +29,6 @@ struct Handler {
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, ctx: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
-        // let clear_commands = false;
-        // if clear_commands {
-        //     application_commands::clear(&ctx).await;
-        // }
-
-        let mongo_conn_str = env::var("MONGO_CONN_STR").expect("Need a MongoDB connection string.");
-        let client = match get_mongo_client(mongo_conn_str.as_str()).await {
-            Ok(client) => client,
-            Err(_) => {
-                panic!("Could not get mongoDB client.")
-            }
-        };
-        if let Err(err) = insert_guilds(&ctx, &client).await {
-            warn!("{:?}", err)
-        }
-
-        application_commands::register(&ctx).await;
-    }
-
-    async fn interaction_create(&self, _ctx: Context, _interaction: Interaction) {
-        // If the interaction is an Application Command then name the interaction applicationCommand
-        // and move on to the evaluate the block
-        application_commands::handle_interactions(
-            &_ctx,
-            _interaction,
-            &self.mongodb_client,
-            &self.redis_client,
-        )
-        .await
-    }
-
     // We use the cache_ready event just in case some cache operation is required in whatever use
     // case you have for this.
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
@@ -107,12 +74,45 @@ impl EventHandler for Handler {
             self.is_loop_running.swap(true, Ordering::Relaxed);
         }
     }
+
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        info!("{} is connected!", ready.user.name);
+        // let clear_commands = false;
+        // if clear_commands {
+        //     application_commands::clear(&ctx).await;
+        // }
+
+        let mongo_conn_str = env::var("MONGO_CONN_STR").expect("Need a MongoDB connection string.");
+        let client = match get_mongo_client(mongo_conn_str.as_str()).await {
+            Ok(client) => client,
+            Err(_) => {
+                panic!("Could not get mongoDB client.")
+            }
+        };
+        if let Err(err) = insert_guilds(&ctx, &client).await {
+            warn!("{:?}", err)
+        }
+
+        application_commands::register(&ctx).await;
+    }
+
+    async fn interaction_create(&self, _ctx: Context, _interaction: Interaction) {
+        // If the interaction is an Application Command then name the interaction applicationCommand
+        // and move on to the evaluate the block
+        application_commands::handle_interactions(
+            &_ctx,
+            _interaction,
+            &self.mongodb_client,
+            &self.redis_client,
+        )
+        .await
+    }
 }
 
 #[tokio::main]
 async fn main() {
     // Initialize the tracing subscriber
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().json().init();
     info!("Starting the bot...");
 
     let framework = StandardFramework::new().configure(|c| c.prefix("~")); // set the bot's prefix to "~"
