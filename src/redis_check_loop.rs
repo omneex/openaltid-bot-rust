@@ -311,7 +311,10 @@ pub async fn check_redis(
             );
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            debug!("Will now send the info to the logs channel which is {} with the Score: {} / {}.", channel_id, score, minscore);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the Score: {} / {}.",
+                channel_id, score, minscore
+            );
             let res = channel
                 .id()
                 .send_message(&ctx.http, |message| {
@@ -480,9 +483,10 @@ pub async fn check_redis(
                     error!("Error getting channel - {:?}", err);
                     return;
                 }
-            }; debug!("{:?}", channel_id);
-               // if it is set up then send the log info to the channel in an embed
-               // log that the user encountered an error with the reason
+            };
+            debug!("{:?}", channel_id);
+            // if it is set up then send the log info to the channel in an embed
+            // log that the user encountered an error with the reason
             info!(
                 "User: {} was NOT verified in {} Score: {} / {}",
                 user_id, guild_id, score, minscore
@@ -490,7 +494,10 @@ pub async fn check_redis(
 
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            debug!("Will now send the info to the logs channel which is {} with the Score: {} / {}.", channel_id, score, minscore);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the Score: {} / {}.",
+                channel_id, score, minscore
+            );
             let res = channel
                 .id()
                 .send_message(&ctx.http, |message| {
@@ -655,7 +662,10 @@ pub async fn check_redis(
             );
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            debug!("Will now send the info to the logs channel which is {} with the reason of '{}'.", channel_id, reason);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the reason of '{}'.",
+                channel_id, reason
+            );
 
             let res = channel
                 .id()
