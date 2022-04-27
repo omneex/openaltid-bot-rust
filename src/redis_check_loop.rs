@@ -67,7 +67,7 @@ pub async fn check_redis(
         {
             error!("5 {:?}", err);
         };
-        let _res: Result<String, RedisError> = conn
+        let res: Result<String, RedisError> = conn
             .get("complete:179780264761884672:416407744246054912")
             .await;
         debug!("{:?}", res);
@@ -453,7 +453,7 @@ pub async fn check_redis(
 
             // delete the key from redis
             // log the info
-            let _del_res: u16 = match conn.del(&key).await {
+            let del_res: u16 = match conn.del(&key).await {
                 Ok(val) => val,
                 Err(err) => {
                     error!("Failed to delete key: {} - {}", key, err);
@@ -640,7 +640,7 @@ pub async fn check_redis(
             };
 
             // delete the key from redis
-            let _del_res: u16 = match conn.del(&key).await {
+            let del_res: u16 = match conn.del(&key).await {
                 Ok(val) => val,
                 Err(err) => {
                     error!("Failed to delete key: {} - {}", key, err);
