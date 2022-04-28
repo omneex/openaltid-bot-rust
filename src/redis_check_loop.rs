@@ -422,7 +422,15 @@ pub async fn check_redis(
             let member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
-                    error!("Cant get member_obj - {:?}", err);
+                    error!("Cant get member_obj - {:?} - Removing from the queue!", err);
+                    let del_res: u16 = match conn.del(&key).await {
+                        Ok(val) => val,
+                        Err(err) => {
+                            error!("Failed to delete key: {} - {}", key, err);
+                            return;
+                        }
+                    };
+                    debug!("{:?}", del_res);
                     return;
                 }
             };

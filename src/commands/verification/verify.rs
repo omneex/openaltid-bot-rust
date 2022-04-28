@@ -258,9 +258,10 @@ pub async fn command(
     let verification_link: String = format!("https://verify.holoen.fans/verify/{}", rand_string);
 
     let res: RedisResult<Value> = redis_conn
-        .set(
+        .set_ex(
             format!("uuid:{}", rand_string),
             format!("{}:{}", command.user.id.0, guild_id),
+            (15 * 60) as usize,
         )
         .await;
     debug!("Result from setting value - {:?}", res);
