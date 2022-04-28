@@ -67,10 +67,10 @@ pub async fn check_redis(
         {
             error!("5 {:?}", err);
         };
-        let _res: Result<String, RedisError> = conn
+        let res: Result<String, RedisError> = conn
             .get("complete:179780264761884672:416407744246054912")
             .await;
-        //debug!("{:?}", res);
+        debug!("{:?}", res);
     }
 
     let keys = match conn.scan_match("complete*").await {
@@ -90,7 +90,7 @@ pub async fn check_redis(
     };
 
     for key in keys {
-        //debug!("KEY FOUND FROM SCAN: {}", &key);
+        debug!("KEY FOUND FROM SCAN: {}", &key);
         // get the value from redis
 
         let val = match conn.get::<String, String>(key.clone().to_string()).await {
@@ -104,7 +104,7 @@ pub async fn check_redis(
             }
         };
 
-        //debug!("Value from iter key ({}) - {}", &key, val);
+        debug!("Value from iter key ({}) - {}", &key, val);
 
         // check for "true*"
         if val.starts_with("true") {
@@ -120,7 +120,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             // guild_id is index 2
             let guild_id = match key_split.get(2) {
                 Some(val) => <&str>::clone(val),
@@ -129,7 +129,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_id);
+            debug!("{:?}", guild_id);
 
             // split val on ':'
             // score is index 1
@@ -184,7 +184,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             let mut member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
@@ -284,7 +284,7 @@ pub async fn check_redis(
 
                     match res {
                         Ok(_) => {
-                            // debug!("Embed message was sent successfully.")
+                            debug!("Embed message was sent successfully.")
                         }
                         Err(err) => {
                             warn!("Could not send embed - {:?}", err)
@@ -311,7 +311,10 @@ pub async fn check_redis(
             );
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            // debug!("Will now send the info to the logs channel which is {} with the Score: {} / {}.", channel_id, score, minscore);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the Score: {} / {}.",
+                channel_id, score, minscore
+            );
             let res = channel
                 .id()
                 .send_message(&ctx.http, |message| {
@@ -340,7 +343,7 @@ pub async fn check_redis(
 
             match res {
                 Ok(_) => {
-                    // debug!("Embed message was sent successfully.")
+                    debug!("Embed message was sent successfully.")
                 }
                 Err(err) => {
                     warn!("Could not send embed - {:?}", err)
@@ -349,10 +352,10 @@ pub async fn check_redis(
         }
         // check for "false*"
         else if val.starts_with("false") {
-            // debug!("Value starts with false.");
+            debug!("Value starts with false.");
             // split key on ':'
             let key_split = key.split(':').collect::<Vec<&str>>().clone();
-            // debug!("{:?}", key_split);
+            debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -361,7 +364,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             // guild_id is index 2
             let guild_id = match key_split.get(2) {
                 Some(val) => <&str>::clone(val),
@@ -370,13 +373,13 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_id);
+            debug!("{:?}", guild_id);
 
             // split val on ':'
             // score is index 1
             // minscore is index 2
             let val_split: Vec<&str> = val.split(':').collect();
-            // debug!("{:?}", val_split);
+            debug!("{:?}", val_split);
 
             let score = match val_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -415,11 +418,19 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             let member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
-                    error!("Cant get member_obj - {:?}", err);
+                    error!("Cant get member_obj - {:?} - Removing from the queue!", err);
+                    let del_res: u16 = match conn.del(&key).await {
+                        Ok(val) => val,
+                        Err(err) => {
+                            error!("Failed to delete key: {} - {}", key, err);
+                            return;
+                        }
+                    };
+                    debug!("{:?}", del_res);
                     return;
                 }
             };
@@ -439,7 +450,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_doc_opt);
+            debug!("{:?}", guild_doc_opt);
 
             // Try to extract the guild doc from the option.
             let guild_doc: GuildDoc = match guild_doc_opt {
@@ -449,18 +460,18 @@ pub async fn check_redis(
                 }
                 Some(doc) => doc,
             };
-            // debug!("{:?}", guild_doc);
+            debug!("{:?}", guild_doc);
 
             // delete the key from redis
             // log the info
-            let _del_res: u16 = match conn.del(&key).await {
+            let del_res: u16 = match conn.del(&key).await {
                 Ok(val) => val,
                 Err(err) => {
                     error!("Failed to delete key: {} - {}", key, err);
                     return;
                 }
             };
-            // debug!("{:?}", del_res);
+            debug!("{:?}", del_res);
 
             // check if the verification logs channel is set up
             let channel_id: u64 = match guild_doc.verification_logs_channel_ID.parse() {
@@ -473,16 +484,17 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", channel_id);
+            debug!("{:?}", channel_id);
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
                     error!("Error getting channel - {:?}", err);
                     return;
                 }
-            }; // debug!("{:?}", channel_id);
-               // if it is set up then send the log info to the channel in an embed
-               // log that the user encountered an error with the reason
+            };
+            debug!("{:?}", channel_id);
+            // if it is set up then send the log info to the channel in an embed
+            // log that the user encountered an error with the reason
             info!(
                 "User: {} was NOT verified in {} Score: {} / {}",
                 user_id, guild_id, score, minscore
@@ -490,7 +502,10 @@ pub async fn check_redis(
 
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            // debug!("Will now send the info to the logs channel which is {} with the Score: {} / {}.", channel_id, score, minscore);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the Score: {} / {}.",
+                channel_id, score, minscore
+            );
             let res = channel
                 .id()
                 .send_message(&ctx.http, |message| {
@@ -519,7 +534,7 @@ pub async fn check_redis(
 
             match res {
                 Ok(_) => {
-                    // debug!("Embed message was sent successfully.")
+                    debug!("Embed message was sent successfully.")
                 }
                 Err(err) => {
                     warn!("Could not send embed - {:?}", err)
@@ -528,10 +543,10 @@ pub async fn check_redis(
         }
         // check for "error*"
         else if val.starts_with("error") {
-            // debug!("Value starts with error.");
+            debug!("Value starts with error.");
             // split key on ':'
             let key_split = key.split(':').collect::<Vec<&str>>().clone();
-            // debug!("{:?}", key_split);
+            debug!("{:?}", key_split);
             // user_id is index 1
             let user_id = match key_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -540,7 +555,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             // guild_id is index 2
             let guild_id = match key_split.get(2) {
                 Some(val) => <&str>::clone(val),
@@ -549,12 +564,12 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_id);
+            debug!("{:?}", guild_id);
 
             // split val on ':'
             // reason is index 1
             let val_split: Vec<&str> = val.split(':').collect();
-            // debug!("{:?}", val_split);
+            debug!("{:?}", val_split);
             // user_id is index 1
             let reason = match val_split.get(1) {
                 Some(val) => <&str>::clone(val),
@@ -585,7 +600,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", user_id);
+            debug!("{:?}", user_id);
             let member_obj = match ctx.http.get_member(guild_id, user_id).await {
                 Ok(mem) => mem,
                 Err(err) => {
@@ -594,7 +609,7 @@ pub async fn check_redis(
                 }
             };
 
-            // debug!("{:?}", reason);
+            debug!("{:?}", reason);
             // get guild settings from mongodb
             let guild_doc_opt: Option<GuildDoc> = match mongo_client
                 .database("botdb")
@@ -608,7 +623,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", guild_doc_opt);
+            debug!("{:?}", guild_doc_opt);
 
             // Try to extract the guild doc from the option.
             let guild_doc: GuildDoc = match guild_doc_opt {
@@ -618,7 +633,7 @@ pub async fn check_redis(
                 }
                 Some(doc) => doc,
             };
-            // debug!("{:?}", guild_doc);
+            debug!("{:?}", guild_doc);
 
             let channel_id: u64 = match guild_doc.verification_logs_channel_ID.parse() {
                 Ok(num) => num,
@@ -630,7 +645,7 @@ pub async fn check_redis(
                     return;
                 }
             };
-            // debug!("{:?}", channel_id);
+            debug!("{:?}", channel_id);
             let channel = match ctx.http.get_channel(channel_id).await {
                 Ok(chn) => chn,
                 Err(err) => {
@@ -640,14 +655,14 @@ pub async fn check_redis(
             };
 
             // delete the key from redis
-            let _del_res: u16 = match conn.del(&key).await {
+            let del_res: u16 = match conn.del(&key).await {
                 Ok(val) => val,
                 Err(err) => {
                     error!("Failed to delete key: {} - {}", key, err);
                     return;
                 }
             };
-            // debug!("{:?}", del_res);
+            debug!("{:?}", del_res);
             // log that the user encountered an error with the reason
             info!(
                 "User: {} was NOT verified in {} Reason: {}",
@@ -655,7 +670,10 @@ pub async fn check_redis(
             );
             // check if the server has a logs channel
             // if it is set up then send the log info to the channel in an embed
-            // debug!("Will now send the info to the logs channel which is {} with the reason of '{}'.", channel_id, reason);
+            debug!(
+                "Will now send the info to the logs channel which is {} with the reason of '{}'.",
+                channel_id, reason
+            );
 
             let res = channel
                 .id()
@@ -685,7 +703,7 @@ pub async fn check_redis(
 
             match res {
                 Ok(_) => {
-                    //debug!("Embed message was sent successfully.")
+                    debug!("Embed message was sent successfully.")
                 }
                 Err(err) => {
                     warn!("Could not send embed - {:?}", err)

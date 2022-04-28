@@ -18,7 +18,6 @@ jobs:
         run: cargo fmt --all -- --check
   build:
     runs-on: ubuntu-latest
-    needs: [format]
     steps:
     - uses: actions/checkout@v2
     - name: build
