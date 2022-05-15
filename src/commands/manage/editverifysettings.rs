@@ -113,7 +113,7 @@ pub async fn command(
                 .interaction_response_data(|message| {
                     message.create_embed(|embed| {
                         embed
-                            .title("Current Server Settings")
+                            .title("New Server Settings")
                             .field("Mod Role:", format!("**{}**\n<@&{}>", settings_doc.mod_role_ID, settings_doc.mod_role_ID), true)
                             .field("Verification Age:", format!("\n**{}** days", settings_doc.verification_age), true)
                             .field("Logs Channel:", format!("**{}**\n<#{}>", settings_doc.verification_logs_channel_ID, settings_doc.verification_logs_channel_ID), true)
