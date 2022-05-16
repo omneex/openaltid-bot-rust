@@ -30,7 +30,7 @@ pub async fn command(
             return;
         }
     }
-    
+
     let command_options = command.data.options.clone();
     // Extract the Guild ID as a string.
     let guild_id_str = match command.guild_id {
@@ -42,22 +42,28 @@ pub async fn command(
     };
 
     let mut values_to_update = doc! {};
-    let accept_args = ["zero_point", "difficulty_addition", "mfa_bonus", "premium_bonus", "preferred_num_of_accounts"];
+    let accept_args = [
+        "zero_point",
+        "difficulty_addition",
+        "mfa_bonus",
+        "premium_bonus",
+        "preferred_num_of_accounts",
+    ];
     for tup in super::super::common::slash_commands::extract_vec(&command_options).await {
         if accept_args.contains(&tup.0) {
             if let Some(x) = super::super::common::slash_commands::get_int(tup.1).await {
                 let bson_val = match bson::to_bson(&x) {
                     Ok(bson_val) => bson_val,
                     Err(err) => {
-                        
+                        error!("Could not convert val ({:?}) to bson. {:?}", x, err);
                         interaction_error("Could not convert inputs.", command, ctx).await;
-                        return
-                    },
+                        return;
+                    }
                 };
                 values_to_update.insert(format!("guild_settings.{}", &tup.0), bson_val);
             } else {
                 interaction_error("param was invalid.", command, ctx).await;
-                return
+                return;
             }
         }
     }
@@ -66,11 +72,7 @@ pub async fn command(
 
     let collection: Collection<GuildStruct> = mongo_client.database("botdb").collection("guilds");
     let _ = match collection
-        .update_one(
-            doc! {"guild_ID": &guild_id_str},
-            update_statement,
-            None,
-        )
+        .update_one(doc! {"guild_ID": &guild_id_str}, update_statement, None)
         .await
     {
         Ok(res) => res,
@@ -80,7 +82,6 @@ pub async fn command(
             return;
         }
     };
-
 
     let collection: Collection<GuildStruct> = mongo_client.database("botdb").collection("guilds");
     let settings_doc = match collection
@@ -164,7 +165,9 @@ pub async fn register(ctx: &Context) {
             })
             .create_option(|opt| {
                 opt.name("preferred_num_of_accounts")
-                    .description("Number of accounts preferred. Acts as a multiplier to zero_point.")
+                    .description(
+                        "Number of accounts preferred. Acts as a multiplier to zero_point.",
+                    )
                     .kind(ApplicationCommandOptionType::Integer)
                     .required(false)
             })
