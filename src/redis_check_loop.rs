@@ -14,7 +14,10 @@ pub async fn check_redis(
     // Format for completed verification keys is: complete:{userid}:{guildid}
     // Value must be either 'true' or 'false'
     let mut conn = match redis_client.get_async_connection().await {
-        Ok(conn) => conn,
+        Ok(conn) => {
+            info!("Connection to Redis has been established.");
+            conn
+        },
         Err(err) => {
             error!("Error getting connection to redis - {:?}", err);
             return;
@@ -88,6 +91,10 @@ pub async fn check_redis(
             return;
         }
     };
+
+    if keys.len < 1 {
+        debug!("No keys found!");
+    }
 
     for key in keys {
         debug!("KEY FOUND FROM SCAN: {}", &key);
