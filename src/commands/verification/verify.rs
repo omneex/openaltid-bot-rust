@@ -1,3 +1,5 @@
+use std::env;
+
 use crate::dbmodels::guild::Guild as GuildDoc;
 use chrono::{Duration, Utc};
 use mongodb::bson::doc;
@@ -254,8 +256,8 @@ pub async fn command(
             }
         }
     }
-
-    let verification_link: String = format!("https://verify.holoen.fans/verify/{}", rand_string);
+    let frontend_host = env::var("FRONTEND_HOST").expect("Need a frontend host in env.");
+    let verification_link: String = format!("{}/verify/{}",frontend_host, rand_string);
 
     let res: RedisResult<Value> = redis_conn
         .set_ex(
