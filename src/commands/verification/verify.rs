@@ -257,7 +257,7 @@ pub async fn command(
         }
     }
     let frontend_host = env::var("FRONTEND_HOST").expect("Need a frontend host in env.");
-    let verification_link: String = format!("{}/verify/{}",frontend_host, rand_string);
+    let verification_link: String = format!("{}/verify?code={}",frontend_host, rand_string);
 
     let res: RedisResult<Value> = redis_conn
         .set_ex(
