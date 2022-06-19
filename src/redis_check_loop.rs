@@ -92,7 +92,7 @@ pub async fn check_redis(
         }
     };
 
-    if keys.len < 1 {
+    if keys.len() < 1 {
         debug!("No keys found!");
     }
 
