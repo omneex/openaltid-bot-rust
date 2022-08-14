@@ -54,6 +54,7 @@ impl EventHandler for Handler {
         let redis_client = Arc::new(redis_client);
 
         if !self.is_loop_running.load(Ordering::Relaxed) {
+            info!("Starting the redis check loop");
             let ctx1 = Arc::clone(&ctx);
             let mongo_client1 = Arc::clone(&mongo_client);
             let redis_client1 = Arc::clone(&redis_client);
@@ -66,7 +67,7 @@ impl EventHandler for Handler {
                         Arc::clone(&redis_client1),
                     )
                     .await;
-                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    tokio::time::sleep(Duration::from_secs(1)).await;
                 }
             });
 
