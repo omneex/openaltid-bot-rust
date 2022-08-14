@@ -20,7 +20,7 @@ pub async fn check_redis(
         },
         Err(err) => {
             error!("Error getting connection to redis - {:?}", err);
-            return;
+            panic!("Error getting connection to redis - {:?}", err);
         }
     };
     let is_debug = if let Ok(val) = env::var("DEBUG") {
