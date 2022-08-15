@@ -1,20 +1,25 @@
-use super::super::super::dbmodels::guild::Guild as GuildStruct;
+use mongodb::bson;
+use mongodb::bson::doc;
+use mongodb::Collection;
+use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::application::interaction::MessageFlags;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::model::prelude::Role;
+use serenity::prelude::Context;
+use tracing::debug;
+use tracing::{error, info, instrument, warn};
+
 use crate::commands::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
 use crate::commands::common::slash_commands::extract_vec;
-use mongodb::bson::doc;
-use mongodb::{bson, Client, Collection};
-use serenity::model::interactions::application_command::{
-    ApplicationCommand, ApplicationCommandInteraction, ApplicationCommandOptionType,
-};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use tracing::{debug, error, info, instrument, warn};
+use crate::dbmodels::guild::Guild as GuildStruct;
+
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    mongo_client: &Client,
+    mongo_client: &mongodb::Client,
 ) {
     // Check if mod already.
     match check_if_mod(ctx, command, mongo_client).await {
@@ -93,7 +98,7 @@ pub async fn command(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
+                    message.flags(MessageFlags::EPHEMERAL);
                     message.content(format!(
                         "The mod role is now set to <@&{}> ID: {}",
                         &role, &role
@@ -111,14 +116,14 @@ pub async fn command(
 
 #[instrument(skip(ctx))]
 pub async fn register(ctx: &Context) {
-    let result = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    let result = Command::create_global_application_command(&*ctx.http, |command| {
         command
             .name("setmodrole")
             .description("Add an additional role to be able to act as mod. Mod only command.")
             .create_option(|opt| {
                 opt.name("role")
                     .description("The role you want to set.")
-                    .kind(ApplicationCommandOptionType::Role)
+                    .kind(CommandOptionType::Role)
                     .required(true)
             })
     })

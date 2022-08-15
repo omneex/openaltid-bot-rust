@@ -1,5 +1,5 @@
 use crate::dbmodels::guild::{Guild, GuildSettings};
-use crate::{get_collection, get_db};
+use crate::mongo_conn::{get_collection, get_db};
 use mongodb::bson::doc;
 use mongodb::options::IndexOptions;
 use mongodb::*;
@@ -10,7 +10,7 @@ use tracing::*;
 pub async fn insert_guilds(ctx: &Context, client: &mongodb::Client) -> Result<(), String> {
     let db = get_db(client, "botdb").await;
     let col: Collection<Guild> = get_collection(&db, "guilds", None).await;
-    let guilds = ctx.cache.guilds().await;
+    let guilds = ctx.cache.guilds();
     for guild in guilds {
         info!("Inserting ({}) into MongoDB", guild.0);
         let res = col

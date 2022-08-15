@@ -5,12 +5,8 @@ mod mongo_conn;
 mod redis_check_loop;
 mod startup;
 
-use crate::{
-    mongo_conn::{get_collection, get_db, get_mongo_client},
-    startup::insert_guilds,
-};
-use redis_check_loop::check_redis;
-use serenity::{async_trait, framework::StandardFramework, model::prelude::*, prelude::*};
+use serenity::model::application::interaction::Interaction;
+
 use std::{
     env,
     sync::{
@@ -19,7 +15,15 @@ use std::{
     },
     time::Duration,
 };
-use tracing::*;
+
+use mongo_conn::get_mongo_client;
+use serenity::{
+    async_trait, framework::StandardFramework, model::prelude::GuildId, model::prelude::*,
+    prelude::*,
+};
+use tracing::{error, info, warn};
+
+use crate::{redis_check_loop::check_redis, startup::insert_guilds};
 
 struct Handler {
     mongodb_client: mongodb::Client,
@@ -146,7 +150,7 @@ async fn main() {
         is_loop_running: AtomicBool::new(false),
     };
 
-    let mut client = Client::builder(token)
+    let mut client = Client::builder(token, GatewayIntents::GUILD_INTEGRATIONS)
         .event_handler(handler)
         .framework(framework)
         .application_id(application_id)

@@ -1,25 +1,27 @@
-use crate::commands::common::slash_commands;
-use crate::commands::common::{
-    interaction_error::{interaction_error, interaction_error_comp},
-    permissions_check::{check_if_mod, check_if_mod_comp},
-};
-use mongodb::bson::{doc, Document};
-use mongodb::*;
-use serenity::model::interactions::application_command::{
-    ApplicationCommand, ApplicationCommandInteraction, ApplicationCommandOptionType,
-};
-use serenity::model::interactions::message_component::ButtonStyle;
-use serenity::model::interactions::InteractionResponseType;
+use mongodb::bson::doc;
+use mongodb::bson::Document;
+use mongodb::Collection;
+use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::application::interaction::message_component::MessageComponentInteraction;
+use serenity::model::prelude::component::ButtonStyle;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
 use serenity::model::user::User;
-use serenity::{
-    client::Context, model::interactions::message_component::MessageComponentInteraction,
-};
-use tracing::*;
+use serenity::prelude::Context;
+use tracing::debug;
+use tracing::{error, info, instrument, warn};
+
+use crate::commands::common::interaction_error::interaction_error;
+use crate::commands::common::interaction_error::interaction_error_comp;
+use crate::commands::common::permissions_check::check_if_mod;
+use crate::commands::common::permissions_check::check_if_mod_comp;
+use crate::commands::common::slash_commands;
+
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    mongo_client: &Client,
+    mongo_client: &mongodb::Client,
 ) {
     match check_if_mod(ctx, command, mongo_client).await {
         Ok(is_mod) => {
@@ -117,7 +119,7 @@ pub async fn command(
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
                     message
-                        .create_embed(|embed| {
+                        .embed(|embed| {
                             embed
                                 .title("Connection Added to database!")
                                 .description("You can undo this by clicking the button below.")
@@ -220,7 +222,7 @@ pub async fn undo_callback(
                         response
                             .kind(InteractionResponseType::ChannelMessageWithSource)
                             .interaction_response_data(|message| {
-                                message.create_embed(|embed| {
+                                message.embed(|embed| {
                                     embed
                                         .title("No changes made")
                                         .description("No database entries matched the given data.")
@@ -243,7 +245,7 @@ pub async fn undo_callback(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.create_embed(|embed| {
+                    message.embed(|embed| {
                         embed
                             .title("Changes reverted")
                             .description(
@@ -260,26 +262,26 @@ pub async fn undo_callback(
 }
 
 pub async fn register(ctx: &Context) {
-    if let Err(err) = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    if let Err(err) = Command::create_global_application_command(&*ctx.http, |command| {
         command
             .name("addconnection")
             .description("Manually add connections to the database")
             .create_option(|opt| {
                 opt.name("user")
                     .description("The user you are verifying")
-                    .kind(ApplicationCommandOptionType::User)
+                    .kind(CommandOptionType::User)
                     .required(true)
             })
             .create_option(|opt| {
                 opt.name("account_type")
                     .description("The type of account you are adding (Twitch, YouTube, etc...)")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true)
             })
             .create_option(|opt| {
                 opt.name("account_id")
                     .description("The ID of the account you are verifying")
-                    .kind(ApplicationCommandOptionType::String)
+                    .kind(CommandOptionType::String)
                     .required(true)
             })
     })

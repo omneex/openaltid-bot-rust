@@ -1,9 +1,12 @@
 use crate::dbmodels::guild::Guild;
 use mongodb::bson::doc;
 use mongodb::Client;
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::{
-    client::Context, model::interactions::message_component::MessageComponentInteraction,
+    client::Context,
+    model::{
+        application::interaction::application_command::ApplicationCommandInteraction,
+        prelude::interaction::message_component::MessageComponentInteraction,
+    },
 };
 use tracing::{debug, error};
 

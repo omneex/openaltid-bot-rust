@@ -17,7 +17,7 @@ pub async fn check_redis(
         Ok(conn) => {
             info!("Connection to Redis has been established.");
             conn
-        },
+        }
         Err(err) => {
             error!("Error getting connection to redis - {:?}", err);
             panic!("Error getting connection to redis - {:?}", err);
@@ -92,7 +92,7 @@ pub async fn check_redis(
         }
     };
 
-    if keys.len() < 1 {
+    if keys.is_empty() {
         debug!("No keys found!");
     }
 

@@ -1,14 +1,19 @@
-use super::super::super::dbmodels::guild::Guild as GuildStruct;
-use super::super::common::interaction_error::{channel_message_error, interaction_error};
+use mongodb::bson;
+use mongodb::bson::doc;
+use mongodb::bson::Bson;
+use mongodb::Collection;
+use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::application::interaction::MessageFlags;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::prelude::Context;
+use tracing::{error, info, instrument, warn};
+
+use crate::commands::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
-use crate::commands::common::slash_commands::{extract_vec, get_int};
-use crate::log::warn;
-use mongodb::bson::{doc, Bson};
-use mongodb::*;
-use serenity::model::prelude::application_command::*;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use tracing::{error, info, instrument};
+use crate::commands::common::slash_commands::extract_vec;
+use crate::commands::common::slash_commands::get_int;
+use crate::dbmodels::guild::Guild as GuildStruct;
 
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
@@ -94,7 +99,7 @@ pub async fn command(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
+                    message.flags(MessageFlags::EPHEMERAL);
                     message.content(format!(
                         "The minimum age to bypass verification is now set to: {} days",
                         num_days_bson
@@ -111,14 +116,14 @@ pub async fn command(
 
 #[instrument(skip(ctx))]
 pub async fn register(ctx: &Context) {
-    let result = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    let result = Command::create_global_application_command(&*ctx.http, |command| {
         command
             .name("setminage")
             .description("Set the minimum age to avoid verification")
             .create_option(|opt| {
                 opt.name("age")
                     .description("The channel to send logs to.")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(true)
             })
     })

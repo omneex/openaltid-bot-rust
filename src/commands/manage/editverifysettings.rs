@@ -1,14 +1,15 @@
-use super::super::super::dbmodels::guild::Guild as GuildStruct;
-use super::super::common::interaction_error::{channel_message_error, interaction_error};
-use crate::commands::common::permissions_check::check_if_mod;
-use crate::log::warn;
+use mongodb::bson;
 use mongodb::bson::doc;
-use mongodb::*;
+use mongodb::Collection;
+use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::prelude::Context;
+use tracing::{error, info, instrument, warn};
 
-use serenity::model::prelude::application_command::*;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use tracing::{error, info, instrument};
+use crate::commands::common::interaction_error::{channel_message_error, interaction_error};
+use crate::commands::common::permissions_check::check_if_mod;
+use crate::dbmodels::guild::Guild as GuildStruct;
 
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
@@ -112,7 +113,7 @@ pub async fn command(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.create_embed(|embed| {
+                    message.embed(|embed| {
                         embed
                             .title("New Server Settings")
                             .field("Mod Role:", format!("**{}**\n<@&{}>", settings_doc.mod_role_ID, settings_doc.mod_role_ID), true)
@@ -141,26 +142,26 @@ pub async fn command(
 
 #[instrument(skip(ctx))]
 pub async fn register(ctx: &Context) {
-    let result = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    let result = Command::create_global_application_command(&*ctx.http, |command| {
         command
             .name("editverifysettings")
             .description("Set the settings for the verification algorithm.")
             .create_option(|opt| {
                 opt.name("zero_point")
                     .description("Base point value required per account.")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(false)
             })
             .create_option(|opt| {
                 opt.name("mfa_bonus")
                     .description("Bonus value if user has multi factor auth on.")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(false)
             })
             .create_option(|opt| {
                 opt.name("premium_bonus")
                     .description("Bonus value if user has premium.")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(false)
             })
             .create_option(|opt| {
@@ -168,13 +169,13 @@ pub async fn register(ctx: &Context) {
                     .description(
                         "Number of accounts preferred. Acts as a multiplier to zero_point.",
                     )
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(false)
             })
             .create_option(|opt| {
                 opt.name("difficulty_addition")
                     .description("Arbitrary value to add to required amount.")
-                    .kind(ApplicationCommandOptionType::Integer)
+                    .kind(CommandOptionType::Integer)
                     .required(false)
             })
     })
