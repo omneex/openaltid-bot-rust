@@ -21,7 +21,7 @@ use serenity::{
     async_trait, framework::StandardFramework, model::prelude::GuildId, model::prelude::*,
     prelude::*,
 };
-use tracing::{error, info, warn};
+use tracing::{error, info, warn, debug};
 
 use crate::{redis_check_loop::check_redis, startup::insert_guilds};
 
@@ -36,6 +36,7 @@ impl EventHandler for Handler {
     // We use the cache_ready event just in case some cache operation is required in whatever use
     // case you have for this.
     async fn cache_ready(&self, ctx: Context, _guilds: Vec<GuildId>) {
+        info!("Cache is ready, starting the redis-check-loop");
         let ctx = Arc::new(ctx);
 
         let mongo_conn_str = env::var("MONGO_CONN_STR").expect("Need a MongoDB connection string.");
@@ -77,6 +78,8 @@ impl EventHandler for Handler {
 
             // Now that the loop is running, we set the bool to true
             self.is_loop_running.swap(true, Ordering::Relaxed);
+        } else {
+            debug!("Not running the loop because its already running.");
         }
     }
 
