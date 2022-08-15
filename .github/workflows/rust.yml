@@ -54,4 +54,12 @@ jobs:
         with:
           push: true
           tags: omneex/ironicbot:${{github.ref_name}}
+  webhook:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - name: Webhook to trigger pull of new image
+        uses: zzzze/webhook-trigger@v1.0.0
+        with:
+          webhook_url: ${{ secrets.PULL_URL }}
 
