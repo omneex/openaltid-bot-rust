@@ -1,22 +1,34 @@
 use std::env;
-
-use crate::dbmodels::guild::Guild as GuildDoc;
-use chrono::{Duration, Utc};
+use chrono::Duration;
+use chrono::Utc;
+use mongodb::Collection;
+use mongodb::bson::Document;
 use mongodb::bson::doc;
-use rand::{distributions, thread_rng, Rng};
-use redis::{AsyncCommands, RedisResult, Value};
-use serenity::model::interactions::application_command::{
-    ApplicationCommand, ApplicationCommandInteraction,
-};
-use serenity::model::interactions::message_component::MessageComponentInteraction;
-use serenity::model::prelude::message_component::ButtonStyle;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use rand::Rng;
+use rand::distributions;
+use rand::thread_rng;
+use redis::AsyncCommands;
+use redis::RedisResult;
+use redis::Value;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::application::command::Command;
+use serenity::model::application::interaction::MessageFlags;
+use serenity::model::prelude::component::ButtonStyle;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::model::application::interaction::message_component::MessageComponentInteraction;
+use serenity::model::user::User;
+use serenity::prelude::Context;
 use serenity::utils::Colour;
+use tracing::debug;
+use tracing::{error, info, warn, instrument};
 
-use tracing::*;
+use crate::commands::common::interaction_error::interaction_error_comp;
+use crate::commands::common::interaction_error::{interaction_error};
+use crate::commands::common::permissions_check::check_if_mod;
+use crate::commands::common::permissions_check::check_if_mod_comp;
+use crate::commands::common::slash_commands;
+use crate::dbmodels::guild::Guild as GuildDoc;
 
-use crate::commands::common::interaction_error::interaction_error;
 #[allow(unused)]
 #[instrument(skip(ctx, mongo_client, redis_conn))]
 pub async fn command(
@@ -89,7 +101,7 @@ pub async fn command(
         member_of_command.user.id.created_at()
     );
 
-    if member_of_command.user.id.created_at() < min_time {
+    if member_of_command.user.id.created_at().unix_timestamp() < min_time.timestamp() {
         let verification_role_id: u64 = match guild_doc.verification_role_ID.parse() {
             Ok(num) => num,
             Err(err) => {
@@ -174,7 +186,7 @@ pub async fn command(
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|message| {
-                            message.create_embed(|embed| {
+                            message.embed(|embed| {
                                 embed
                                     .title("Auto-Verified")
                                     .description("Your account is above the min age, so you automatically skipped verification.")
@@ -182,7 +194,7 @@ pub async fn command(
                                         footer.text("Powered by Open/Alt.ID")
                                     })
                             });
-                            message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                            message.flags(MessageFlags::EPHEMERAL)
                         })
                 }).await;
             }
@@ -272,7 +284,7 @@ pub async fn command(
         response
             .kind(InteractionResponseType::ChannelMessageWithSource)
             .interaction_response_data(|message| {
-                message.create_embed(|embed| {
+                message.embed(|embed| {
                     embed
                         .title("Verification Initiated")
                         .description("Please follow the link below to start the verification process.\n\nYou must connect one or more of the supported accounts. The more you add the more likely you are to be verified.\n\nThis link will only stay valid for 15 minutes, after that you will need to use the command again.")
@@ -308,7 +320,7 @@ pub async fn command(
                         })
                     })
                 });
-                message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                message.flags(MessageFlags::EPHEMERAL)
             })
     }).await;
     let channel_id = match guild_doc.verification_logs_channel_ID.parse::<u64>() {
@@ -376,7 +388,7 @@ pub async fn help_callback(
         response
             .kind(InteractionResponseType::ChannelMessageWithSource)
             .interaction_response_data(|message| {
-                message.create_embed(|embed| {
+                message.embed(|embed| {
                     embed
                         .title("Sorry you're having troubles!")
                         .description("Follow this check list to ensure you can verify:")
@@ -388,13 +400,13 @@ pub async fn help_callback(
                             footer.text("Powered by Open/Alt.ID")
                         })
                 });
-                message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                message.flags(MessageFlags::EPHEMERAL)
             })
     }).await;
 }
 
 pub async fn register(ctx: &Context) {
-    if let Err(err) = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    if let Err(err) = Command::create_global_application_command(&*ctx.http, |command| {
         command.name("verify").description("Verify")
     })
     .await

@@ -1,10 +1,8 @@
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
-use serenity::model::interactions::InteractionResponseType;
-use serenity::model::prelude::InteractionApplicationCommandCallbackDataFlags;
+
+use serenity::model::prelude::interaction::MessageFlags;
+use serenity::model::prelude::interaction::message_component::MessageComponentInteraction;
 use serenity::utils::Colour;
-use serenity::{
-    client::Context, model::interactions::message_component::MessageComponentInteraction,
-};
+use serenity::{model::prelude::{interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}, prelude::Context};
 use tracing::{error, warn};
 
 pub async fn interaction_error(
@@ -19,8 +17,8 @@ pub async fn interaction_error(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
-                    message.create_embed(|embed| {
+                    message.flags(MessageFlags::EPHEMERAL);
+                    message.embed(|embed| {
                         embed
                             .title("Uh Oh!")
                             .description("Something went wrong during that.")
@@ -51,8 +49,8 @@ pub async fn interaction_error_comp(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
-                    message.create_embed(|embed| {
+                    message.flags(MessageFlags::EPHEMERAL);
+                    message.embed(|embed| {
                         embed
                             .title("Uh Oh!")
                             .description("Something went wrong during that.")

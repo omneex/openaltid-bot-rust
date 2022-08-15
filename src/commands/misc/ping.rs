@@ -1,10 +1,12 @@
-use serenity::framework::standard::{macros::command, CommandResult};
-use serenity::model::interactions::application_command::{
-    ApplicationCommand, ApplicationCommandInteraction,
-};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::framework::standard::CommandResult;
+use serenity::framework::standard::macros::command;
+use serenity::model::application::command::Command;
+use serenity::model::application::interaction::MessageFlags;
+use serenity::model::prelude::Message;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::prelude::Context;
 use tracing::{error, info};
+
 
 #[command]
 pub async fn ping_msg(ctx: &Context, msg: &Message) -> CommandResult {
@@ -24,7 +26,7 @@ pub async fn command(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL);
+                    message.flags(MessageFlags::EPHEMERAL);
                     message.content("Pongus!")
                 })
         })
@@ -33,7 +35,7 @@ pub async fn command(
 }
 #[allow(dead_code)]
 pub async fn register(ctx: &Context) {
-    if let Err(err) = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    if let Err(err) = Command::create_global_application_command(&*ctx.http, |command| {
         command.name("pingus").description("An amazing command")
     })
     .await

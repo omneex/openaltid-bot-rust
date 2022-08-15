@@ -1,13 +1,12 @@
 use super::super::super::dbmodels::guild::Guild as GuildStruct;
 use super::super::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
-use crate::log::warn;
 use mongodb::bson::doc;
 use mongodb::*;
-use serenity::model::prelude::application_command::*;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use tracing::{error, info, instrument};
+use serenity::model::application::command::Command;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::prelude::Context;
+use tracing::{error, info, instrument, warn};
 
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(
@@ -68,7 +67,7 @@ pub async fn command(
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.create_embed(|embed| {
+                    message.embed(|embed| {
                         embed
                             .title("Current Server Settings")
                             .field("Mod Role:", format!("**{}**\n<@&{}>", settings_doc.mod_role_ID, settings_doc.mod_role_ID), true)
@@ -97,7 +96,7 @@ pub async fn command(
 
 #[instrument(skip(ctx))]
 pub async fn register(ctx: &Context) {
-    let result = ApplicationCommand::create_global_application_command(&*ctx.http, |command| {
+    let result = Command::create_global_application_command(&*ctx.http, |command| {
         command
             .name("currentsettings")
             .description("Gets the current settings of the server.")

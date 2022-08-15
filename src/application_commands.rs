@@ -4,11 +4,16 @@ use crate::commands::verification::*;
 use mongodb::Client;
 use redis::AsyncCommands;
 use redis::RedisError;
-use serenity::model::prelude::application_command::*;
-use serenity::model::prelude::interactions::*;
-use serenity::model::prelude::message_component::*;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::model::prelude::CommandId;
+use serenity::model::prelude::CommandPermissionId;
+use serenity::model::prelude::GuildId;
+use serenity::model::prelude::RoleId;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::prelude::command::Command;
+use serenity::model::prelude::command::CommandPermissionType;
+use serenity::model::prelude::interaction::Interaction;
+use serenity::model::application::interaction::message_component::MessageComponentInteraction;
+use serenity::prelude::Context;
 use tracing::*;
 
 pub async fn register(ctx: &Context) {
@@ -27,7 +32,7 @@ pub async fn register(ctx: &Context) {
     info!("Done.");
 
     // Print out the currently registered commands.
-    if let Err(err) = ApplicationCommand::get_global_application_commands(&*ctx.http)
+    if let Err(err) = Command::get_global_application_commands(&*ctx.http)
         .await
         .map(|commands| {
             commands.iter().for_each(|command| {
@@ -147,7 +152,7 @@ async fn handle_components(
 // pub async fn clear(ctx: &Context) {
 //     info!("Clearing slash commands...");
 //     let mut commands_to_del: Vec<(CommandId, String)> = vec![];
-//     let _res = ApplicationCommand::get_global_application_commands(&*ctx.http)
+//     let _res = Command::get_global_application_commands(&*ctx.http)
 //         .await
 //         .map(|comms| {
 //             comms.iter().for_each(|comm| {
@@ -166,7 +171,7 @@ async fn handle_components(
 //             commands_to_del[x].1, commands_to_del[x].0
 //         );
 //         let _res =
-//             ApplicationCommand::delete_global_application_command(&*ctx.http, commands_to_del[x].0)
+//             Command::delete_global_application_command(&*ctx.http, commands_to_del[x].0)
 //                 .await;
 //     }
 //     for guild in ctx.cache.guilds().await {
@@ -187,7 +192,7 @@ async fn handle_components(
 #[instrument(skip(ctx, command))]
 pub async fn add_admins_to_perms(
     ctx: &Context,
-    command: ApplicationCommand,
+    command: Command,
     guild_id: GuildId,
 ) -> serenity::static_assertions::_core::result::Result<(), &'static str> {
     let mut admin_role_ids: Vec<RoleId> = vec![];
@@ -213,7 +218,7 @@ pub async fn add_admins_to_perms(
                     perm_data
                         .id(id.0)
                         .permission(true)
-                        .kind(ApplicationCommandPermissionType::Role)
+                        .kind(CommandPermissionType::Role)
                 })
             })
             .await

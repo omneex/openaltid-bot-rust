@@ -1,8 +1,10 @@
-use serenity::framework::standard::{macros::command, CommandResult};
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::framework::standard::CommandResult;
+use serenity::framework::standard::macros::command;
+use serenity::model::prelude::Message;
+use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::prelude::Context;
 use tracing::info;
+
 
 #[command]
 pub async fn play_msg(ctx: &Context, msg: &Message) -> CommandResult {
