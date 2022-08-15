@@ -152,8 +152,9 @@ async fn main() {
         redis_client,
         is_loop_running: AtomicBool::new(false),
     };
-
-    let mut client = Client::builder(token, GatewayIntents::GUILD_INTEGRATIONS)
+    let intents = GatewayIntents::GUILD_INTEGRATIONS
+    | GatewayIntents::GUILDS;
+    let mut client = Client::builder(token, intents)
         .event_handler(handler)
         .framework(framework)
         .application_id(application_id)
