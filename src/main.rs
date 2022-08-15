@@ -5,6 +5,8 @@ mod mongo_conn;
 mod redis_check_loop;
 mod startup;
 
+use serenity::model::application::interaction::Interaction;
+
 use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, env, time::Duration};
 
 use mongo_conn::get_mongo_client;
