@@ -1,13 +1,13 @@
-use mongodb::Collection;
 use mongodb::bson;
 use mongodb::bson::doc;
-use serenity::model::application::command::CommandOptionType;
+use mongodb::Collection;
 use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
 use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
 use serenity::prelude::Context;
-use tracing::{error, info, warn, instrument};
+use tracing::{error, info, instrument, warn};
 
-use crate::commands::common::interaction_error::{interaction_error, channel_message_error};
+use crate::commands::common::interaction_error::{channel_message_error, interaction_error};
 use crate::commands::common::permissions_check::check_if_mod;
 use crate::dbmodels::guild::Guild as GuildStruct;
 

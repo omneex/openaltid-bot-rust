@@ -7,11 +7,21 @@ mod startup;
 
 use serenity::model::application::interaction::Interaction;
 
-use std::{sync::{atomic::{AtomicBool, Ordering}, Arc}, env, time::Duration};
+use std::{
+    env,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::Duration,
+};
 
 use mongo_conn::get_mongo_client;
-use serenity::{async_trait, prelude::*, model::prelude::*, model::prelude::GuildId, framework::StandardFramework};
-use tracing::{info, warn, error};
+use serenity::{
+    async_trait, framework::StandardFramework, model::prelude::GuildId, model::prelude::*,
+    prelude::*,
+};
+use tracing::{error, info, warn};
 
 use crate::{redis_check_loop::check_redis, startup::insert_guilds};
 

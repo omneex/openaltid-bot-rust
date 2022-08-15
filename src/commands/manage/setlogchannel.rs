@@ -1,16 +1,16 @@
-use mongodb::Collection;
+use crate::commands::common::interaction_error::interaction_error;
+use crate::commands::common::permissions_check::check_if_mod;
+use crate::dbmodels::guild::Guild as GuildStruct;
 use mongodb::bson;
 use mongodb::bson::doc;
-use serenity::model::application::command::CommandOptionType;
+use mongodb::Collection;
 use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::MessageFlags;
 use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
 use serenity::prelude::Context;
 use tracing::debug;
-use tracing::{error, info, warn, instrument};
-use crate::commands::common::interaction_error::{interaction_error};
-use crate::commands::common::permissions_check::check_if_mod;
-use crate::dbmodels::guild::Guild as GuildStruct;
+use tracing::{error, info, instrument, warn};
 
 #[instrument(skip(ctx, mongo_client))]
 pub async fn command(

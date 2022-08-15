@@ -1,24 +1,24 @@
-use std::env;
+use crate::commands::common::interaction_error::interaction_error;
+use crate::dbmodels::guild::Guild as GuildDoc;
 use chrono::Duration;
 use chrono::Utc;
 use mongodb::bson::doc;
-use rand::Rng;
 use rand::distributions;
 use rand::thread_rng;
+use rand::Rng;
 use redis::AsyncCommands;
 use redis::RedisResult;
 use redis::Value;
 use serenity::model::application::command::Command;
+use serenity::model::application::interaction::message_component::MessageComponentInteraction;
 use serenity::model::application::interaction::MessageFlags;
 use serenity::model::prelude::component::ButtonStyle;
 use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
-use serenity::model::application::interaction::message_component::MessageComponentInteraction;
 use serenity::prelude::Context;
 use serenity::utils::Colour;
+use std::env;
 use tracing::debug;
-use tracing::{error, info, warn, instrument};
-use crate::commands::common::interaction_error::{interaction_error};
-use crate::dbmodels::guild::Guild as GuildDoc;
+use tracing::{error, info, instrument, warn};
 
 #[allow(unused)]
 #[instrument(skip(ctx, mongo_client, redis_conn))]

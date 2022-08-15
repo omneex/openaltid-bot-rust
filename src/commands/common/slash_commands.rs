@@ -1,11 +1,10 @@
-
-use serenity::model::prelude::{Role, PartialChannel};
 use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::{user::User, application::interaction::application_command::CommandDataOption};
+use serenity::model::prelude::{PartialChannel, Role};
+use serenity::model::{
+    application::interaction::application_command::CommandDataOption, user::User,
+};
 
-pub async fn extract_vec(
-    options: &[CommandDataOption],
-) -> Vec<(&str, CommandDataOptionValue)> {
+pub async fn extract_vec(options: &[CommandDataOption]) -> Vec<(&str, CommandDataOptionValue)> {
     let mut params: Vec<(&str, CommandDataOptionValue)> = vec![];
     options.iter().for_each(|opt| {
         let value: Option<CommandDataOptionValue> = opt.to_owned().resolved;
@@ -33,9 +32,7 @@ pub async fn get_role(option_value: CommandDataOptionValue) -> Option<Role> {
     value
 }
 
-pub async fn get_channel(
-    option_value: CommandDataOptionValue,
-) -> Option<PartialChannel> {
+pub async fn get_channel(option_value: CommandDataOptionValue) -> Option<PartialChannel> {
     let value: Option<PartialChannel> = match option_value {
         CommandDataOptionValue::Channel(chan) => Some(chan),
         _ => None,
@@ -59,9 +56,7 @@ pub async fn get_bool(option_value: CommandDataOptionValue) -> Option<bool> {
     value
 }
 
-pub async fn get_string(
-    option_value: CommandDataOptionValue,
-) -> Option<String> {
+pub async fn get_string(option_value: CommandDataOptionValue) -> Option<String> {
     let value: Option<String> = match option_value {
         CommandDataOptionValue::String(string) => Some(string),
         _ => None,

@@ -1,12 +1,11 @@
-use serenity::framework::standard::CommandResult;
 use serenity::framework::standard::macros::command;
+use serenity::framework::standard::CommandResult;
 use serenity::model::application::command::Command;
 use serenity::model::application::interaction::MessageFlags;
-use serenity::model::prelude::Message;
 use serenity::model::prelude::interaction::{application_command::*, InteractionResponseType};
+use serenity::model::prelude::Message;
 use serenity::prelude::Context;
 use tracing::{error, info};
-
 
 #[command]
 pub async fn ping_msg(ctx: &Context, msg: &Message) -> CommandResult {

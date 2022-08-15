@@ -1,8 +1,12 @@
-
-use serenity::model::prelude::interaction::MessageFlags;
 use serenity::model::prelude::interaction::message_component::MessageComponentInteraction;
+use serenity::model::prelude::interaction::MessageFlags;
 use serenity::utils::Colour;
-use serenity::{model::prelude::{interaction::{application_command::ApplicationCommandInteraction, InteractionResponseType}}, prelude::Context};
+use serenity::{
+    model::prelude::interaction::{
+        application_command::ApplicationCommandInteraction, InteractionResponseType,
+    },
+    prelude::Context,
+};
 use tracing::{error, warn};
 
 pub async fn interaction_error(
