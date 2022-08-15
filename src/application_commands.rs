@@ -132,7 +132,7 @@ async fn handle_components(
     mongo_client: &Client,
 ) {
     let ids_split: Vec<&str> = m_component.data.custom_id.split(':').collect();
-    let comp_type: &str = match ids_split.get(0) {
+    let comp_type: &str = match ids_split.first() {
         Some(str_type) => *str_type,
         None => "none",
     };
